@@ -1,4 +1,7 @@
-
+/**
+ * @author Graham Netherton
+ *
+ */
 public abstract class Player {
 
 	public Player() {

@@ -1,9 +1,5 @@
 /**
- * 
- */
-
-/**
- * @author Graham
+ * @author Graham Netherton
  *
  */
 public class Game {
