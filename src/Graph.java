@@ -29,6 +29,17 @@ public class Graph {
 	}
 	
 	/**
+	 * Adds a two-way adjacency link between two nodes.
+	 * @param n1 The first node.
+	 * @param n2 The second node.
+	 */
+	public void addAdjacencyLink(Node n1, Node n2) {
+		n1.addAdjacent(n2);
+		n2.addAdjacent(n1);
+		return;
+	}
+	
+	/**
 	 * Attempts to find the first node with the specified number of adjacent nodes.
 	 * @param adj The number of required adjacent nodes.
 	 * @return The first suitable node, or null if none were found.
@@ -66,7 +77,7 @@ public class Graph {
 	public ArrayList<Node> getOwnedNodes(Player player) {
 		ArrayList<Node> ownedNodes = new ArrayList<Node>(0);
 		for (Node node : nodes) {
-			if (node.getOwner() == player) {
+			if (node.getPlayer() == player) {
 				ownedNodes.add(node);
 			}
 		}

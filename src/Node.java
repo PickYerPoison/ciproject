@@ -34,7 +34,7 @@ public class Node {
 	 * Returns the owner of this node.
 	 * @return The player who owns this node.
 	 */
-	public Player getOwner() {
+	public Player getPlayer() {
 		return owner;
 	}
 	
@@ -61,7 +61,7 @@ public class Node {
 	 * Sets the owner of this node.
 	 * @param player The new owner.
 	 */
-	public void setOwner(Player player) {
+	public void setPlayer(Player player) {
 		owner = player;
 		return;
 	}
@@ -76,12 +76,11 @@ public class Node {
 	}
 
 	/**
-	 * Adds a two-way adjacency link to the given node.
+	 * Adds an adjacency link to the given node.
 	 * @param node Node to link to.
 	 */
 	public void addAdjacent(Node node) {
 		adjacent.add(node);
-		node.getAdjacent().add(this);
 		return;
 	}
 	
@@ -108,7 +107,7 @@ public class Node {
 		// range determines distance to check, so end this feeler if it's gone too far
 		if (range >= 0) {
 			// add the threat level for this node if it's not owned by the player
-			if (getOwner() != player) {
+			if (getPlayer() != player) {
 				// because the range diminishes over distance, it multiplies instead of adds 
 				threat += getUnits() * range;
 			}
@@ -118,7 +117,7 @@ public class Node {
 				// get the node's threat level if:
 				// - it is not owned by this player
 				// - it is not in the list of already checked nodes
-				if (node.getOwner() != player && checked.contains(node) == false) {
+				if (node.getPlayer() != player && checked.contains(node) == false) {
 					threat += node.getThreat(checked, player, range-1);
 				}
 			}
