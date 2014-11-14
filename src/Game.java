@@ -5,7 +5,7 @@
 public class Game {
 
 	/**
-	 * 
+	 * Constructor for the Game class.
 	 */
 	public Game() {
 		// TODO Auto-generated constructor stub

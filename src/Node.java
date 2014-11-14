@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public class Node {
 	
 	private
-		int owner;
+		Player owner;
 		int units;
 		ArrayList<Node> adjacent;
 	
@@ -18,13 +18,13 @@ public class Node {
 	 *	CONSTRUCTORS 
 	 */
 	/**
-	 * Constructor for the Node class. Initializes the owner and number of units as 0
-	 * and creates the adjacency ArrayList.
+	 * Constructor for the Node class. Initializes the owner to null
+	 * and the number of units to 0 and creates the adjacency ArrayList.
 	 */
 	public Node() {
-		owner = 0;
+		owner = null;
 		units = 0;
-		adjacent = new ArrayList<Node>(1);
+		adjacent = new ArrayList<Node>(0);
 	}
 	
 	/*
@@ -32,15 +32,15 @@ public class Node {
 	 */
 	/**
 	 * Returns the owner of this node.
-	 * @return int Integer of the player who owns this node.
+	 * @return The player who owns this node.
 	 */
-	public int getOwner() {
+	public Player getOwner() {
 		return owner;
 	}
 	
 	/**
 	 * Returns the number of units in this node.
-	 * @return int The number of units in this node.
+	 * @return The number of units in this node.
 	 */
 	public int getUnits() {
 		return units;
@@ -48,7 +48,7 @@ public class Node {
 	
 	/**
 	 * Returns the adjacent nodes.
-	 * @return ArrayList<Node> ArrayList containing the adjacent nodes.
+	 * @return The ArrayList containing the adjacent nodes.
 	 */
 	public ArrayList<Node> getAdjacent() {
 		return adjacent;
@@ -59,10 +59,10 @@ public class Node {
 	 */
 	/**
 	 * Sets the owner of this node.
-	 * @param x Integer of the new owner.
+	 * @param player The new owner.
 	 */
-	public void setOwner(int x) {
-		owner = x;
+	public void setOwner(Player player) {
+		owner = player;
 		return;
 	}
 	
@@ -81,7 +81,7 @@ public class Node {
 	 */
 	public void addAdjacent(Node node) {
 		adjacent.add(node);
-		node.addAdjacent(this);
+		node.getAdjacent().add(this);
 		return;
 	}
 	
@@ -94,11 +94,11 @@ public class Node {
 	 * relative distance of and number of units within other players' nodes. An individual node's
 	 * contribution to the threat level is given by (number of units) * (range at node).
 	 * @param checked ArrayList<Node> consisting of already-checked nodes.
-	 * @param player Integer of the node's owner.
+	 * @param player The calling node's owner.
 	 * @param range Integer representing how much further out to check.
-	 * @return int Integer representing the threat to the node.
+	 * @return An integer representing the threat to the node.
 	 */
-	public int getThreat(ArrayList<Node> checked, int player, int range) {
+	public int getThreat(ArrayList<Node> checked, Player player, int range) {
 		// add this node to the list of checked nodes
 		checked.add(this);
 		
