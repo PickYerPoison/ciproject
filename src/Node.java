@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 /**
- * The Node class represents the territorites of Risk. Each Node is a territory,
+ * The Node class represents the territories of Risk. Each Node is a territory,
  * containing a number of units belonging to a particular player. 
  * 
  * @author Graham Netherton
