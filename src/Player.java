@@ -202,6 +202,15 @@ public abstract class Player {
 	
 	/**
 	 * To be implemented by each individual AI. This function should contain
+	 * the AI's logic for deciding where to place new units. It should be able
+	 * to function in all of these conditions: no units in any of the nodes,
+	 * units in some of the nodes, and units in all of the nodes.
+	 * @return The node where the unit should be placed.
+	 */
+	abstract Node place();
+	
+	/**
+	 * To be implemented by each individual AI. This function should contain
 	 * the AI's actual decision-making process. The player should never call
 	 * this function by itself; it will always be called externally.
 	 */
