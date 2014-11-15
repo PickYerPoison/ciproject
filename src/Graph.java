@@ -33,19 +33,10 @@ public class Graph {
 	 * @param n1 The first node.
 	 * @param n2 The second node.
 	 */
-	public void addAdjacencyLink(Node n1, Node n2) {
+	public void addAdjacent(Node n1, Node n2) {
 		n1.addAdjacent(n2);
 		n2.addAdjacent(n1);
 		return;
-	}
-	
-	/**
-	 * Attempts to find the first node with the specified number of adjacent nodes.
-	 * @param adj The number of required adjacent nodes.
-	 * @return The first suitable node, or null if none were found.
-	 */
-	public Node getNodeWithAdjacency(int adj) {
-		return getNodeWithAdjacency(adj, 1);
 	}
 	
 	/**
