@@ -21,7 +21,7 @@ public class Game {
 		setupMap();
 		
 		// debug output
-		/*
+                
 		Node n = graph.getNodeWithAdjacency(2, 1);
 		int i = 1;
 		while (n != null) {
@@ -57,7 +57,19 @@ public class Game {
 			n = graph.getNodeWithAdjacency(6, i);
 		}
 		System.out.println("Number of degree 6 nodes: " + (i-1));
-		*/
+		
+	}
+	
+	/**
+	 * Determines if a given player has lost.
+	 * @param player The player to check.
+	 * @return True if the player has lost, false if they haven't.
+	 */
+	public boolean hasLost(Player player) {
+		if (graph.getNumOwnedNodes(player) == 0)
+			return true;
+		else
+			return false;
 	}
 	
 	/**

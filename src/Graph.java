@@ -61,6 +61,21 @@ public class Graph {
 	}
 	
 	/**
+	 * Counts the nodes owned by a given player.
+	 * @param player The player making the request.
+	 * @return The number of nodes owned by the player.
+	 */
+	public int getNumOwnedNodes(Player player) {
+		int ownedNodes = 0;
+		for (Node node : nodes) {
+			if (node.getPlayer() == player) {
+				ownedNodes++;
+			}
+		}
+		return ownedNodes;
+	}
+	
+	/**
 	 * Returns an ArrayList<Node> consisting of all the nodes owned by a given player.
 	 * @param player The player making the request.
 	 * @return An ArrayList of the nodes owned.
