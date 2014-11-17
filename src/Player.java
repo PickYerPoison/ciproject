@@ -42,48 +42,68 @@ public abstract class Player {
 	}
 	
 	/**
-	 * Attacks an unowned node using units from an owned one. Returns a string
-	 * containing the error if something went wrong, or null if nothing did. Call
-	 * this any number of times from turn(). 
+	 * Outputs an error message to the console.
+	 * @param error A string containing the error message, or null for no message.
+	 */
+	public void showError(String error) {
+		if (error != null)
+			System.out.println("Player " + name + " says " + error);
+		return;
+	}
+	
+	/**
+	 * Determines if this player has lost.
+	 * @return True if the player has lost, false if they haven't.
+	 */
+	public boolean hasLost() {
+		if (graph.getNumOwnedNodes(this) == 0)
+			return true;
+		else
+			return false;
+	}
+	
+	/**
+	 * Attacks an unowned node using units from an owned one. Returns a boolean
+	 * indicating if an error occurred. Call this any number of times from turn(). 
 	 * @param from The node the attack is originating from.
 	 * @param to The node the attack is being made towards.
 	 * @param num The number of units being used to attack.
-	 * @return A string containing the error message, or null if no error.
+	 * @return True if there was an error, false if there wasn't.
 	 */
-	public String attack(Node from, Node to, int num) {
-		String error = null;
+	public boolean attack(Node from, Node to, int num) {
+		boolean error = true;
 		// from node isn't owned by this player
-		if (from.getPlayer() != this)
-			error = "ATTACK ERROR: Tried to attack from an unowned node!";
+		if (from.getOwner() != this)
+			showError("ATTACK ERROR: Tried to attack from an unowned node!");
 		// to node is owned by this player
-		else if (to.getPlayer() == this)
-			error = "ATTACK ERROR: Tried to attack an owned node!";
+		else if (to.getOwner() == this)
+			showError("ATTACK ERROR: Tried to attack an owned node!");
 		// more units are being transferred than are available or allowed
 		else if (num >= from.getUnits() || num > 3)
-			error = "ATTACK ERROR: Tried to attack with too many units!";
+			showError("ATTACK ERROR: Tried to attack with too many units!");
 		// no units being used to attack
 		else if (num == 0)
-			error = "ATTACK ERROR: Tried to attack with zero units!";
+			showError("ATTACK ERROR: Tried to attack with zero units!");
 		// negative number of units are being used to attack
 		else if (num < 0)
-			error = "ATTACK ERROR: Tried to attack with a negative number of units!";
+			showError("ATTACK ERROR: Tried to attack with a negative number of units!");
 		// nodes aren't adjacent
 		else if (from.getAdjacent().contains(to) == false)
-			error = "ATTACK ERROR: Tried to attack a non-adjacent node!";
+			showError("ATTACK ERROR: Tried to attack a non-adjacent node!");
 		// no errors - request that the defender defend
 		else {
 			// get the number of defending units
-			int defense = to.getPlayer().defend(from, to, num);
+			int defense = to.getOwner().defend(from, to, num);
 			
 			// too many units being used to defend
 			if (defense > 2 || defense > to.getUnits())
-				error = "DEFEND ERROR: Tried to defend with too many units!";
+				showError("DEFEND ERROR: Tried to defend with too many units!");
 			// no units being used to defend
 			else if (defense == 0)
-				error = "DEFEND ERROR: Tried to defend with zero units!";
+				showError("DEFEND ERROR: Tried to defend with zero units!");
 			// negative number of units being used to defend
 			else if (defense < 0)
-				error = "DEFEND ERROR: Tried to defend with a negative number of units!";
+				showError("DEFEND ERROR: Tried to defend with a negative number of units!");
 			else {
 				// create the RNG for rolling dice
 				Random rand = new Random();
@@ -119,19 +139,20 @@ public abstract class Player {
 					
 					// too many units being moved
 					if (move >= from.getUnits())
-						error = "OCCUPY ERROR: Tried to move too many units!";
+						showError("OCCUPY ERROR: Tried to move too many units!");
 					// no units being moved
 					else if (move == 0)
-						error = "OCCUPY ERROR: Tried to move zero units!";
+						showError("OCCUPY ERROR: Tried to move zero units!");
 					// negative number of units being moved
 					else if (move < 0)
-						error = "OCCUPY ERROR: Tried to move a negative number of units!";
+						showError("OCCUPY ERROR: Tried to move a negative number of units!");
 					// no errors - exchange ownership and units
 					else {
-						to.setPlayer(this);
+						to.setOwner(this);
 						to.addUnits(-to.getUnits());
 						from.addUnits(-defenderWins);
 						graph.moveUnits(from, to, move);
+						error = false;
 					}
 				}
 				// otherwise, just process unit losses
@@ -145,36 +166,37 @@ public abstract class Player {
 	}
 	
 	/**
-	 * Fortifies one node using units from another. Returns a string containing
-	 * the error if something went wrong, or null if nothing did. Call this
-	 * function once at the end of turn().
+	 * Fortifies one node using units from another. Returns a boolean indicating
+	 * if there was an error. Call this function once at the end of turn().
 	 * @param from Node to transfer from.
 	 * @param to Node to transfer to.
 	 * @param num Number of units to transfer.
-	 * @return A string containing the error message, or null if no error.
+	 * @return True if there was an error, false if there wasn't.
 	 */
-	public String fortify(Node from, Node to, int num) {
-		String error = null;
+	public boolean fortify(Node from, Node to, int num) {
+		boolean error = true;
 		// one of the nodes isn't owned by this player
-		if (from.getPlayer() != this)
-			error = "FORTIFY ERROR: Tried to transfer from an unowned node!";
-		else if (to.getPlayer() != this)
-			error = "FORTIFY ERROR: Tried to transfer to an unowned node!";
+		if (from.getOwner() != this)
+			showError("FORTIFY ERROR: Tried to transfer from an unowned node!");
+		else if (to.getOwner() != this)
+			showError("FORTIFY ERROR: Tried to transfer to an unowned node!");
 		// more units being transferred than are available
 		else if (num >= from.getUnits())
-			error = "FORTIFY ERROR: Tried to transfer too many units!";
+			showError("FORTIFY ERROR: Tried to transfer too many units!");
 		// no units being transferred
 		else if (num == 0)
-			error = "FORTIFY ERROR: Tried to transfer zero units!";
+			showError("FORTIFY ERROR: Tried to transfer zero units!");
 		// negative number of units being transferred
 		else if (num < 0)
-			error = "FORTIFY ERROR: Tried to transfer a negative number of units!";
+			showError("FORTIFY ERROR: Tried to transfer a negative number of units!");
 		// nodes aren't adjacent
 		else if (from.getAdjacent().contains(to) == false)
-			error = "FORTIFY ERROR: Tried to transfer to a non-adjacent node!";
+			showError("FORTIFY ERROR: Tried to transfer to a non-adjacent node!");
 		// no errors - move the units
-		else
+		else {
 			graph.moveUnits(from, to, num);
+			error = false;
+		}
 		
 		return error;
 	}

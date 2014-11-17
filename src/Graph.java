@@ -68,7 +68,7 @@ public class Graph {
 	public int getNumOwnedNodes(Player player) {
 		int ownedNodes = 0;
 		for (Node node : nodes) {
-			if (node.getPlayer() == player) {
+			if (node.getOwner() == player) {
 				ownedNodes++;
 			}
 		}
@@ -83,7 +83,7 @@ public class Graph {
 	public ArrayList<Node> getOwnedNodes(Player player) {
 		ArrayList<Node> ownedNodes = new ArrayList<Node>(0);
 		for (Node node : nodes) {
-			if (node.getPlayer() == player) {
+			if (node.getOwner() == player) {
 				ownedNodes.add(node);
 			}
 		}
@@ -99,5 +99,26 @@ public class Graph {
 	public void moveUnits(Node from, Node to, int num) {
 		to.addUnits(num);
 		from.addUnits(-num);
+	}
+	
+	/**
+	 * Places a unit in a node. Returns a boolean indicating if there was an error.
+	 * @param node The node to place the unit at.
+	 * @param player The player placing the unit.
+	 * @return True if there was an error, false if there wasn't.
+	 */
+	public boolean placeUnit(Node node, Player player) {
+		boolean error = true;
+		
+		// the node is owned by a different player
+		if (node.getOwner() != null && node.getOwner() != player)
+			player.showError("PLACE ERROR: Tried to put a unit an another player's node!");
+		else {
+			node.addUnits(1);
+			node.setOwner(player);
+			error = false;
+		}
+		
+		return error;
 	}
 }

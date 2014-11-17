@@ -20,56 +20,52 @@ public class Game {
 		// set up the map
 		setupMap();
 		
-		// debug output
-                
-		Node n = graph.getNodeWithAdjacency(2, 1);
-		int i = 1;
-		while (n != null) {
-			i++;
-			n = graph.getNodeWithAdjacency(2, i);
-		}
-		System.out.println("Number of degree 2 nodes: " + (i-1));
-		n = graph.getNodeWithAdjacency(3, 1);
-		i = 1;
-		while (n != null) {
-			i++;
-			n = graph.getNodeWithAdjacency(3, i);
-		}
-		System.out.println("Number of degree 3 nodes: " + (i-1));
-		n = graph.getNodeWithAdjacency(4, 1);
-		i = 1;
-		while (n != null) {
-			i++;
-			n = graph.getNodeWithAdjacency(4, i);
-		}
-		System.out.println("Number of degree 4 nodes: " + (i-1));
-		n = graph.getNodeWithAdjacency(5, 1);
-		i = 1;
-		while (n != null) {
-			i++;
-			n = graph.getNodeWithAdjacency(5, i);
-		}
-		System.out.println("Number of degree 5 nodes: " + (i-1));
-		n = graph.getNodeWithAdjacency(6, 1);
-		i = 1;
-		while (n != null) {
-			i++;
-			n = graph.getNodeWithAdjacency(6, i);
-		}
-		System.out.println("Number of degree 6 nodes: " + (i-1));
+		// add players
+		int inPlay = 0; // increase this counter whenever you add a player!
 		
+		// determine how many pieces each player will start with
+		int pieces = 0;
+		switch (inPlay) {
+			case 3: pieces = 35; break;
+			case 4: pieces = 30; break;
+			case 5: pieces = 25; break;
+			case 6: pieces = 20; break;
+			default: pieces = 0;
+		}
+		
+		// have the players distribute their pieces
+		for (int i = 0; i < pieces; i++) {
+			for (Player player : players)
+				graph.placeUnit(player.place(), player);
+		}
+		
+		// cycle through players
+		while (inPlay > 1) {
+			for (Player player : players) {
+				if (player.hasLost() == false) {
+					int newUnits = graph.getNumOwnedNodes(player)/3;
+					for (int i = 0; i < newUnits; i++)
+						graph.placeUnit(player.place(), player);
+					player.turn();
+				}
+			}
+		}
+		
+		// declare the winner
+		for (Player player : players) {
+			if (player.hasLost() == false) {
+				System.out.println("The winner of the match is " + player.getName() + ".");
+			}
+		}
 	}
 	
 	/**
-	 * Determines if a given player has lost.
-	 * @param player The player to check.
-	 * @return True if the player has lost, false if they haven't.
+	 * Adds a player to the game.
+	 * @param player The player to add.
 	 */
-	public boolean hasLost(Player player) {
-		if (graph.getNumOwnedNodes(player) == 0)
-			return true;
-		else
-			return false;
+	public void addPlayer(Player player) {
+		players.add(player);
+		return;
 	}
 	
 	/**
