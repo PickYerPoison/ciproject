@@ -255,7 +255,8 @@ public class DefensivePlayer extends Player {
 		 */
 		// move as many units as possible between two nodes with the highest difference in threat levels
 		int maxDif = 0;
-		int mIndex = 0;
+		Node from = null;
+		Node to = null;
 		for (Node node : nodes) {
 			// get the adjacent nodes
 			ArrayList<Node> adjNodes = node.getAdj();
@@ -269,8 +270,19 @@ public class DefensivePlayer extends Player {
 					index++;
 			}
 			
-			// 
+			// compare the difference in threat levels for each adjacent node
+			for (Node adjNode : adjNodes) {
+				int threatDif = node.getThreat(range) - adjNode.getThreat(range);
+				if (threatDif > maxDif) {
+					maxDif = threatDif;
+					to = adjNode;
+					from = node;
+				}
+			}
 		}
+		
+		// fortify using the given nodes and amounts
+		fortify(from, to, from.getUnits()-1);
 		
 		return;
 	}
