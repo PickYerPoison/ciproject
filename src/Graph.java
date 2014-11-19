@@ -189,7 +189,7 @@ public class Graph {
 	 * @return The threat level of the node.
 	 */
 	public int getAdjThreat(int range, Node node) {
-		int threat = node.getAdjThreat(range+1);
+		int threat = node.getAdjThreat(range);
 		for (Node n : nodes)
 			n.setChecked(false);
 		return threat;

@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * @author Graham Netherton
  *
  */
-public class Node implements Comparable<Node> {
+public class Node {
 	
 	private
 		Player owner = null;
@@ -120,17 +120,24 @@ public class Node implements Comparable<Node> {
 		if (range >= 1) {
 			// because the range diminishes over distance, it multiplies instead of adds
 			threat += getUnits() * range;
-			System.out.print("+(" + getUnits() + "*" + range + ")");
 			
 			if (range > 1) {
+				ArrayList<Node> uncheckedEnemyAdj = new ArrayList<Node>(getAdj());
+				
+				int index = 0;
+				while (index < uncheckedEnemyAdj.size()) {
+					if (uncheckedEnemyAdj.get(index).getOwner() == getOwner() || uncheckedEnemyAdj.get(index).getChecked())
+						uncheckedEnemyAdj.remove(index);
+					else
+						index++;
+				}
 				// iterate through the adjacent nodes
-				for (Node node : getAdj()) {
+				for (Node node : uncheckedEnemyAdj) {
 					// get the node's threat level if:
 					// - it is not owned by this player
 					// - it has not already been checked
-					if (node.getOwner() != player && node.getChecked() == false) {
+					if (!node.getChecked())
 						threat += node.getThreat(range-1, player);
-					}
 				}
 			}
 		}
@@ -148,19 +155,23 @@ public class Node implements Comparable<Node> {
 	public int getThreat(int range) {
 		setChecked(true);
 		int threat = 0;
-		int foundNodes = 0;
-		System.out.print("Threat = 0");
-		for (Node node : getAdj()) {
+		ArrayList<Node> uncheckedEnemyAdj = new ArrayList<Node>(getAdj());
+		
+		int index = 0;
+		while (index < uncheckedEnemyAdj.size()) {
+			if (uncheckedEnemyAdj.get(index).getOwner() == getOwner() || uncheckedEnemyAdj.get(index).getChecked())
+				uncheckedEnemyAdj.remove(index);
+			else
+				index++;
+		}
+		
+		for (Node node : uncheckedEnemyAdj) {
 			// get the node's threat level if:
 			// - it is not owned by this player
 			// - it has not already been checked
-			if (node.getOwner() != getOwner() && node.getChecked() == false) {
-				foundNodes++;
+			if (!node.getChecked())
 				threat += node.getThreat(range, getOwner());
-			}
 		}
-		System.out.println(" = " + threat);
-		System.out.println("I found " + foundNodes + " node(s) that fit.");
 		return threat;
 	}
 	
@@ -174,29 +185,39 @@ public class Node implements Comparable<Node> {
 	 * @return An integer representing the threat to the node.
 	 */
 	public int getAdjThreat(int range, Player player) {
-		// marks this node as checked
+		// indicate that this node has been checked
 		setChecked(true);
 		
 		// create variable to store this node's accumulated threat
 		int threat = 0;
 		
-		// add the threat level for this node if it's not owned by the player
-		if (getOwner() != player) 
-			threat += range;
-		
 		// range determines distance to check, so end this feeler if it's gone too far
-		if (range > 0) {
-			// iterate through the adjacent nodes
-			for (Node node : getAdj()) {
-				// get the node's threat level if:
-				// - it is not owned by this player
-				// - it is not in the list of already checked nodes
-				if (node.getOwner() != player && node.getChecked() == false) {
-					threat += node.getAdjThreat(range-1, player);
+		if (range >= 1) {
+			// because the range diminishes over distance, add it to give closer nodes more weight
+			threat += range;
+			
+			if (range > 1) {
+				ArrayList<Node> uncheckedEnemyAdj = new ArrayList<Node>(getAdj());
+				
+				int index = 0;
+				while (index < uncheckedEnemyAdj.size()) {
+					if (uncheckedEnemyAdj.get(index).getOwner() == getOwner() || uncheckedEnemyAdj.get(index).getChecked())
+						uncheckedEnemyAdj.remove(index);
+					else
+						index++;
+				}
+				// iterate through the adjacent nodes
+				for (Node node : uncheckedEnemyAdj) {
+					// get the node's threat level if:
+					// - it is not owned by this player
+					// - it has not already been checked
+					if (!node.getChecked())
+						threat += node.getAdjThreat(range-1, player);
 				}
 			}
 		}
 		
+		// return this node's branching threat
 		return threat;
 	}
 	
@@ -207,14 +228,51 @@ public class Node implements Comparable<Node> {
 	 * @return An integer representing the threat to the node.
 	 */
 	public int getAdjThreat(int range) {
-		return getAdjThreat(range, getOwner());
+		setChecked(true);
+		int threat = 0;
+		ArrayList<Node> uncheckedEnemyAdj = new ArrayList<Node>(getAdj());
+		
+		int index = 0;
+		while (index < uncheckedEnemyAdj.size()) {
+			if (uncheckedEnemyAdj.get(index).getOwner() == getOwner() || uncheckedEnemyAdj.get(index).getChecked())
+				uncheckedEnemyAdj.remove(index);
+			else
+				index++;
+		}
+		
+		for (Node node : uncheckedEnemyAdj) {
+			// get the node's threat level if:
+			// - it is not owned by this player
+			// - it has not already been checked
+			if (!node.getChecked())
+				threat += node.getAdjThreat(range, getOwner());
+		}
+		return threat;
 	}
 	
-	/* (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	@Override
-	public int compareTo(Node n) {
-		return getThreat(3) - n.getThreat(3);
+	public int getNumNodes() {
+		// check this node off
+		setChecked(true);
+		
+		// count this node to start
+		int num = 1;
+		
+		// check with all adjacent nodes
+		ArrayList<Node> uncheckedAdj = new ArrayList<Node>(getAdj());
+		
+		int index = 0;
+		while (index < uncheckedAdj.size()) {
+			if (uncheckedAdj.get(index).getChecked())
+				uncheckedAdj.remove(index);
+			else
+				index++;
+		}
+		
+		for (Node node : uncheckedAdj) {
+			if (!node.getChecked())
+				num += node.getNumNodes();
+		}
+		
+		return num;
 	}
 }

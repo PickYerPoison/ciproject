@@ -14,18 +14,47 @@ public abstract class Player {
 		Graph graph = null;
 		String name = "Default";
 		int range = 3;
+		int telemetrySize = 7;
+		int[] telemetry = new int[telemetrySize];
+		final int ATTACKS = 0;
+		final int NODES_WON = 1;
+		final int NODES_LOST = 2;
+		final int PLAYERS_KILLED = 3;
+		final int UNITS_KILLED = 4;
+		final int UNITS_LOST = 5;
+		final int TURNS = 6;
 	
 	/**
 	 * Zero argument constructor for the Player class. 
 	 */
-	public Player() { }
+	public Player() {
+		Arrays.fill(telemetry, 0);
+	}
 	
 	/**
 	 * Constructor for the Player class that sets the name. 
 	 * @param n The name to give the player.
 	 */
 	public Player(String n) {
+		Arrays.fill(telemetry, 0);
 		name = n;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		String out = "";
+		for (int i = 0; i < 7; i++) {
+			switch (i) {
+				case ATTACKS: 		out += "       Attacks made: " + telemetry[ATTACKS] + "\n"; break;
+				case NODES_WON: 	out += "     Nodes won/lost: " + telemetry[NODES_WON] + "/" + telemetry[NODES_LOST] + "\n"; break;
+				case PLAYERS_KILLED:out += "     Players killed: " + telemetry[PLAYERS_KILLED] + "\n"; break;
+				case UNITS_KILLED: 	out += "  Units killed/lost: " + telemetry[UNITS_KILLED] + "/" + telemetry[UNITS_LOST] + "\n"; break;
+				case TURNS: 		out += "     Turns survived: " +(telemetry[TURNS]-1) + "\n"; break;
+			}
+		}
+		return out;
 	}
 	
 	/**
@@ -37,6 +66,23 @@ public abstract class Player {
 		return name;
 	}
 	
+	/**
+	 * Gets a piece of telemetry data.
+	 * @param index Integer index of the data to get.
+	 * @return The requested telemetry data.
+	 */
+	public int getTelemetry(int index) {
+		// don't run off the array if a bad value is given
+		if (0 < index && index < telemetrySize)
+			return telemetry[index];
+		else
+			return 0;
+	}
+	
+	/**
+	 * Sets the player's name.
+	 * @param n The player's new name.
+	 */
 	public void setName(String n) {
 		name = n;
 		return;
@@ -48,6 +94,16 @@ public abstract class Player {
 	 */
 	public void setGraph(Graph g) {
 		graph = g;
+		return;
+	}
+	
+	/**
+	 * Allows telemetry data to be set.
+	 * @param index Integer index of the data to set.
+	 * @param value The value to set the data to.
+	 */
+	public void setTelemetry(int index, int value) {
+		telemetry[index] = value;
 		return;
 	}
 	
@@ -175,11 +231,20 @@ public abstract class Player {
 						showError("OCCUPY ERROR: Tried to move a negative number of units!");
 					// no errors - exchange ownership and units
 					else {
+						telemetry[ATTACKS]++;
+						telemetry[NODES_WON]++;
+						telemetry[UNITS_KILLED] += attackerWins;
+						telemetry[UNITS_LOST] += defenderWins;
+						to.getOwner().telemetry[NODES_LOST]++;
+						to.getOwner().telemetry[UNITS_KILLED] += defenderWins;
+						to.getOwner().telemetry[UNITS_LOST] += attackerWins;
 						System.out.println("Player " + getName() + " is making an attack against " + to.getOwner().getName() + "!");
 						System.out.println("Player " + getName() + " won! Has " + (graph.getNumOwnedNodes(this)+1) + " nodes now.");
 						System.out.println("Player " + getName() + " is moving " + move + " units in.");
-						if (to.getOwner().hasLost())
+						if (graph.getNumOwnedNodes(to.getOwner()) == 1) {
+							telemetry[PLAYERS_KILLED]++;
 							System.out.println("Player " + to.getOwner().getName() + " has lost!");
+						}
 						to.setOwner(this);
 						to.addUnits(-to.getUnits());
 						from.addUnits(-defenderWins);
@@ -189,6 +254,11 @@ public abstract class Player {
 				}
 				// otherwise, just process unit losses
 				else {
+					telemetry[ATTACKS]++;
+					telemetry[UNITS_KILLED] += attackerWins;
+					telemetry[UNITS_LOST] += defenderWins;
+					to.getOwner().telemetry[UNITS_KILLED] += defenderWins;
+					to.getOwner().telemetry[UNITS_LOST] += attackerWins;
 					System.out.println("Player " + getName() + " is making an attack against " + to.getOwner().getName() + "!");
 					from.addUnits(-defenderWins);
 					to.addUnits(-attackerWins);
