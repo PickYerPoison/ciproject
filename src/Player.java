@@ -14,7 +14,7 @@ public abstract class Player {
 		Graph graph = null;
 		String name = "Default";
 		int range = 3;
-		int telemetrySize = 7;
+		int telemetrySize = 9;
 		int[] telemetry = new int[telemetrySize];
 		final int ATTACKS = 0;
 		final int NODES_WON = 1;
@@ -23,6 +23,8 @@ public abstract class Player {
 		final int UNITS_KILLED = 4;
 		final int UNITS_LOST = 5;
 		final int TURNS = 6;
+		final int GAMES_WON = 7;
+		final int GAMES_LOST = 8;
 	
 	/**
 	 * Zero argument constructor for the Player class. 
@@ -45,13 +47,21 @@ public abstract class Player {
 	 */
 	public String toString() {
 		String out = "";
-		for (int i = 0; i < 7; i++) {
+		for (int i = 0; i < telemetrySize; i++) {
+			double totalGames = telemetry[GAMES_WON] + telemetry[GAMES_LOST];
 			switch (i) {
-				case ATTACKS: 		out += "       Attacks made: " + telemetry[ATTACKS] + "\n"; break;
-				case NODES_WON: 	out += "     Nodes won/lost: " + telemetry[NODES_WON] + "/" + telemetry[NODES_LOST] + "\n"; break;
-				case PLAYERS_KILLED:out += "     Players killed: " + telemetry[PLAYERS_KILLED] + "\n"; break;
-				case UNITS_KILLED: 	out += "  Units killed/lost: " + telemetry[UNITS_KILLED] + "/" + telemetry[UNITS_LOST] + "\n"; break;
-				case TURNS: 		out += "     Turns survived: " +(telemetry[TURNS]-1) + "\n"; break;
+				case ATTACKS: 		out += "       Attacks made: " + (telemetry[i]/totalGames) + "\n"; break;
+				case NODES_WON: 	out += "          Nodes won: " + (telemetry[i]/totalGames) + "\n"; break;
+				case NODES_LOST:	out += "         Nodes lost: " + (telemetry[i]/totalGames) + "\n"; break;
+				case PLAYERS_KILLED:out += "     Players killed: " + (telemetry[i]/totalGames) + "\n"; break;
+				case UNITS_KILLED: 	out += "       Units killed: " + (telemetry[i]/totalGames) + "\n"; break;
+				case UNITS_LOST:	out += "         Units lost: " + (telemetry[i]/totalGames) + "\n"; break;
+				case TURNS: 		out += "     Turns survived: " + ((telemetry[i]-1)/totalGames) + "\n"; break;
+				case GAMES_WON: {	double ratio = (telemetry[GAMES_WON]/(double)(telemetry[GAMES_LOST]));
+									ratio *= 100;
+									int r = (int)(ratio);
+									out += "          W/L ratio: " + (r/100.0) + "\n";
+									break; }
 			}
 		}
 		return out;
@@ -238,15 +248,10 @@ public abstract class Player {
 						to.getOwner().telemetry[NODES_LOST]++;
 						to.getOwner().telemetry[UNITS_KILLED] += defenderWins;
 						to.getOwner().telemetry[UNITS_LOST] += attackerWins;
-						System.out.println("Player " + getName() + " is making an attack against " + to.getOwner().getName() + "!");
-						System.out.println("Player " + getName() + " won! Has " + (graph.getNumOwnedNodes(this)+1) + " nodes now.");
-						System.out.println("Player " + getName() + " is moving " + move + " units in.");
-						if (graph.getNumOwnedNodes(to.getOwner()) == 1) {
+						if (graph.getNumOwnedNodes(to.getOwner()) == 1)
 							telemetry[PLAYERS_KILLED]++;
-							System.out.println("Player " + to.getOwner().getName() + " has lost!");
-						}
 						to.setOwner(this);
-						to.addUnits(-to.getUnits());
+						to.setUnits(0);
 						from.addUnits(-defenderWins);
 						graph.moveUnits(from, to, move);
 						error = false;
@@ -259,7 +264,6 @@ public abstract class Player {
 					telemetry[UNITS_LOST] += defenderWins;
 					to.getOwner().telemetry[UNITS_KILLED] += defenderWins;
 					to.getOwner().telemetry[UNITS_LOST] += attackerWins;
-					System.out.println("Player " + getName() + " is making an attack against " + to.getOwner().getName() + "!");
 					from.addUnits(-defenderWins);
 					to.addUnits(-attackerWins);
 					error = false;

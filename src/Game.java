@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * @author Graham Netherton
@@ -9,6 +10,13 @@ public class Game {
 	private
 		Graph graph;
 		ArrayList<Player> players;
+		int telemetrySize = 5;
+		int[] telemetry = new int[telemetrySize];
+		final int TOTAL_GAMES = 0;
+		final int TOTAL_TURNS = 1;
+		final int MIN_TURNS = 2;
+		final int MAX_TURNS = 3;
+		final int TIES = 4;
 	
 	/**
 	 * Constructor for the Game class.
@@ -16,6 +24,38 @@ public class Game {
 	public Game() {
 		graph = new Graph();
 		players = new ArrayList<Player>(0);
+		Arrays.fill(telemetry, 0);
+		telemetry[MIN_TURNS] = 999;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		String out = "";
+		
+		out += "GAME STATISTICS\n";
+		
+		for (int i = 0; i < telemetrySize; i++) {
+			switch (i) {
+				case TOTAL_GAMES:	out += "   Total games: " + telemetry[i] + "\n"; break;
+				case TOTAL_TURNS:	out += "Avg turns/game: " + (telemetry[i]/telemetry[TOTAL_GAMES]) + "\n"; break;
+				case MIN_TURNS: 	out += " Shortest game: " + telemetry[i] + " turns\n"; break;
+				case MAX_TURNS:		out += "  Longest game: " + telemetry[i] + " turns\n"; break;
+				case TIES:			out += "     Tie games: " + telemetry[i] + "\n"; break;
+			}
+		}
+		
+		// output summaries for each player
+		out += "------------------------------\n";
+		out += "     AVERAGE PLAYER STATS\n";
+		for (Player player : players) {
+			out += "------------------------------\n";
+			out += "  Player " + player.getName() + "\n";
+			out += player;
+		}
+		
+		return out;
 	}
 	
 	/**
@@ -69,10 +109,8 @@ public class Game {
 		
 		// have the players distribute their units
 		for (int i = 0; i < units; i++) {
-			for (Player player : players) {
-				System.out.println("Player " + player.getName() + " placing unit " + (i + 1) + ".");
+			for (Player player : players)
 				graph.placeUnit(player.place(), player);
-			}
 		}
 		
 		// turns in game thus far
@@ -80,10 +118,7 @@ public class Game {
 		int maxTurns = 500;
 		
 		// cycle through players
-		while (inPlay > 1) {
-			// Output to console
-			System.out.println("Starting turn " + turns + "...");
-			
+		while (inPlay > 1) {			
 			// iterate through the players
 			for (Player player : players) {
 				// don't execute a player's turn if they've lost
@@ -111,47 +146,39 @@ public class Game {
 			turns++;
 			
 			// break out of the loop if maxTurns was exceeded
-			if (turns > maxTurns) {
-				System.out.println("Maximum turns exceeded. Ending game...");
+			if (turns > maxTurns)
 				break;
-			}
 		}
-
-		System.out.println("The game took " + (turns - 1) + " turns.");
 		
-		// declare the winner if no error occurred
-		if (inPlay == 1) {
-			for (Player player : players) {
-				if (player.hasLost() == false) {
-					System.out.println("The winner of the match is " + player.getName() + ".");
-				}
-			}
-		}
+		telemetry[TOTAL_GAMES]++;
+		telemetry[TOTAL_TURNS] += (turns - 1);
+		if (turns > telemetry[MAX_TURNS])
+			telemetry[MAX_TURNS] = turns;
+		if (turns < telemetry[MIN_TURNS])
+			telemetry[MIN_TURNS] = turns;
+		
+		// update winner telemetry
+		if (inPlay == 1)
+			for (Player player : players)
+				if (player.hasLost() == false)
+					player.setTelemetry(7, player.getTelemetry(7)+1);
 		else
-			System.out.println(inPlay + " players remain. The match is a tie.");
+			telemetry[TIES]++;
 		
-		// output summaries for each player
-		for (Player player : players) {
-			System.out.println("-------------------");
-			System.out.println("Player " + player.getName() + (player.hasLost() ? " LOST." : " SURVIVED."));
-			System.out.print(player);
-			if (!player.hasLost()) {
-				System.out.println("        Owned nodes: " + graph.getNumOwnedNodes(player));
-				int totalUnits = 0;
-				for (Node node : graph.getOwnedNodes(player))
-					totalUnits += node.getUnits();
-				System.out.println("         Units left: " + totalUnits);
-			}
-		}
+		// update player telemetry
+		for (Player player : players)
+			if (player.hasLost())
+				player.setTelemetry(8, player.getTelemetry(8)+1);
 		
 		// unload any specified assets
 		if (unloadPlayers) {
 			players.clear();
 			players.trimToSize();
 		}
-		if (unloadMap) {
+		if (unloadMap)
 			graph.clear();
-		}
+		else
+			graph.restore();
 	}
 	
 	/**

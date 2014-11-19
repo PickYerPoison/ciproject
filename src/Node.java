@@ -72,6 +72,15 @@ public class Node {
 	}
 	
 	/**
+	 * Sets the number of units in this node.
+	 * @param u Integer number of units to set the node to have.
+	 */
+	public void setUnits(int u) {
+		units = u;
+		return;
+	}
+	
+	/**
 	 * Add/subtract units to/from the node. 
 	 * @param add Number of units to add to the node, or to subtract if negative.
 	 */

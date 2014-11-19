@@ -12,16 +12,8 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		Game game = new Game();
-		
-		/* 
-		 * Set up the game map. Specifications for the default Risk map:
-		 * Degree	Nodes
-		 * 2		5
-		 * 3		13
-		 * 4		12
-		 * 5		7
-		 * 6		5
-		 */
+
+		// set up the game map
 		int[][] riskMap = { {1, 3, 23}, {0, 2, 3, 4}, {1, 4, 5, 13}, {0, 1, 4, 6}, {1, 2, 3, 5, 7}, 
 				{2, 4, 7}, {3, 7, 8}, {4, 5, 6, 8}, {6, 7, 9}, {8, 10, 11}, {9, 11, 12}, {9, 10, 12, 33}, 
 				{10, 11}, {2, 14, 15}, {13, 15, 16, 17}, {13, 14, 16, 18}, {14, 15, 17, 18, 19}, 
@@ -38,6 +30,9 @@ public class Main {
 		game.addPlayer(new DefensivePlayer("DefP2"));
 		game.addPlayer(new DefensivePlayer("DefP3"));
 		
-		game.runGame();
+		for (int i = 0; i < 1000; i++)
+			game.runGame();
+		
+		System.out.print(game);
 	}
 }

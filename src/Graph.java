@@ -37,6 +37,16 @@ public class Graph {
 	}
 	
 	/**
+	 * Removes units and ownership from all nodes on the graph.
+	 */
+	public void restore() {
+		for (Node node : nodes) {
+			node.setOwner(null);
+			node.setUnits(0);
+		}
+	}
+	
+	/**
 	 * Adds a new node to the graph.
 	 */
 	public void addNode() {

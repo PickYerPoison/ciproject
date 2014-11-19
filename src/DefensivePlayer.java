@@ -212,17 +212,6 @@ public class DefensivePlayer extends Player {
 	 */
 	@Override
 	void turn() {
-		/*
-		// get all owned nodes
-		Node[] nodesArray = graph.getOwnedNodes(this).toArray(new Node[0]);
-		
-		// sort the array of nodes based on their threat levels
-		Arrays.sort(nodesArray);
-		
-		// turn it back into an ArrayList to make other methods easier
-		ArrayList<Node> nodes = new ArrayList<Node>(Arrays.asList(nodesArray));
-		*/
-		
 		// get all owned nodes
 		ArrayList<Node> nodes = graph.getOwnedNodes(this);
 		
@@ -256,40 +245,6 @@ public class DefensivePlayer extends Player {
 		/*
 		 * FORTIFY STEP 
 		 */
-		// move as many units as possible between two nodes with the highest difference in threat levels
-		/*int maxDif = 0;
-		Node from = null;
-		Node to = null;
-		
-		nodes = graph.getOwnedNodes(this);
-		
-		for (Node node : nodes) {
-			// can this node transfer any units?
-			if (node.getUnits() > 1) {
-				// get the adjacent nodes
-				ArrayList<Node> adjNodes = node.getAdj();
-				
-				// prune out nodes we don't own
-				index = 0;
-				while (index < adjNodes.size()) {
-					if (adjNodes.get(index).getOwner() != this)
-						adjNodes.remove(index);
-					else
-						index++;
-				}
-				
-				// compare the difference in threat levels for each adjacent node
-				for (Node adjNode : adjNodes) {
-					int threatDif = node.getThreat(range) - adjNode.getThreat(range);
-					if (threatDif >= maxDif) {
-						maxDif = threatDif;
-						to = adjNode;
-						from = node;
-					}
-				}
-			}
-		}*/
-		
 		// move units to the most threatened node adjacent to enemies from the least threatened adjacent node
 		Node to = null;
 		Node from = null;
