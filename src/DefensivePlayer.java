@@ -51,15 +51,14 @@ public class DefensivePlayer extends Player {
 		 * ratio = to / from
 		 * uses two equations: to + from = units, and to = ratio * from
 		 * -> from * ratio + from = units
-		 * -> ratio * (from + 1) = units
-		 * -> from + 1 = units / ratio
-		 * -> from = units / ratio + 1
-		 * -> to = ratio * 	      from        , round down
-		 * -> to = ratio * (units / ratio + 1), round down
+		 * -> from * (ratio + 1) = units
+		 * -> from = units / (ratio + 1)
+		 * -> to = ratio * 	        from        , round down
+		 * -> to = ratio * (units / (ratio + 1)), round down
 		 */
 		double ratio = toThreat / fromThreat;
 		int units = from.getUnits();
-		int toSend  = (int)(ratio * (units / ratio + 1));
+		int toSend  = (int)(ratio * (units / (ratio + 1)));
 		if (toSend < 1)
 			toSend = 1;
 		
@@ -78,25 +77,19 @@ public class DefensivePlayer extends Player {
 			ArrayList<Node> degNodes = graph.getNodesWithDegree(2);
 			
 			// find the node with the least adjacency threat using the default range
-			int[] adjThreat = new int[degNodes.size()];
+			int min = degNodes.get(0).getAdjThreat(range);
+			Node toPlace = degNodes.get(0);
 			
-			// fill the array
-			for (int i = 0; i < degNodes.size(); i++)
-				adjThreat[i] = degNodes.get(i).getAdjThreat(range);
-			
-			// find the index of the node with the least adjacency threat
-			int min = adjThreat[0];
-			int mIndex = 0;
-			for (int i = 0; i < degNodes.size(); i++) {
-				if (adjThreat[i] < min) {
-					min = adjThreat[i];
-					mIndex = i;
+			for (Node node : degNodes) {
+				int adjThreat = node.getAdjThreat(range);
+				if (adjThreat < min) {
+					min = adjThreat;
+					toPlace = node;
 				}
 			}
 			
 			// place a unit at that node
-			return degNodes.get(mIndex);
-			
+			return toPlace;
 		}
 		// if we already have units on the field
 		else {
@@ -147,8 +140,8 @@ public class DefensivePlayer extends Player {
 				}
 				// did we find no candidates?
 				else {
-					// place a unit at an unowned node, starting with the ones with the least adjacency
-					for (int i = 2; i < 6; i++) {
+					// place a unit at an unowned node, starting with the ones with the least adjacency threat
+					for (int i = 2; i <= 6; i++) {
 						// get all nodes of this degree
 						ArrayList<Node> degNodes = graph.getNodesWithDegree(i);
 						
@@ -169,24 +162,19 @@ public class DefensivePlayer extends Player {
 						// are there multiple ones left?
 						else if (degNodes.size() > 1) {
 							// find the node with the least adjacency threat using the default range
-							int[] adjThreat = new int[degNodes.size()];
+							int min = degNodes.get(0).getAdjThreat(range);
+							Node toReturn = degNodes.get(0);
 							
-							// fill the array
-							for (int j = 0; j < degNodes.size(); j++)
-								adjThreat[j] = degNodes.get(j).getAdjThreat(range);
-							
-							// find the index of the node with the least adjacency threat
-							int min = adjThreat[0];
-							int mIndex = 0;
-							for (int j = 0; j < degNodes.size(); j++) {
-								if (adjThreat[j] < min) {
-									min = adjThreat[j];
-									mIndex = j;
+							for (Node node : degNodes) {
+								int adjThreat = node.getAdjThreat(range);
+								if (adjThreat < min) {
+									min = adjThreat;
+									toReturn = node;
 								}
 							}
-							
+
 							// place a unit at that node
-							return degNodes.get(mIndex);
+							return toReturn;
 						}
 					}
 				}
@@ -247,7 +235,7 @@ public class DefensivePlayer extends Player {
 			for (Node adjNode : adjNodes) {
 				// while we have units and while the adjacent node belongs to the enemy and has fewer units than this one, attack
 				while (node.getUnits() > 1 && adjNode.getOwner() != this && adjNode.getUnits() <= node.getUnits()) {
-					attack(node, adjNode, Math.max(node.getUnits()-1, 3));
+					attack(node, adjNode, Math.min(node.getUnits()-1, 3));
 					
 					// add the node to the list of owned nodes if we captured it
 					if (adjNode.getOwner() == this)

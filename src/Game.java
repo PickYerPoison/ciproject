@@ -133,8 +133,10 @@ public class Game {
 		
 		// have the players distribute their units
 		for (int i = 0; i < units; i++) {
-			for (Player player : players)
+			for (Player player : players) {
+				System.out.println("Player " + player.getName() + " placing unit " + (i + 1) + ".");
 				graph.placeUnit(player.place(), player);
+			}
 		}
 		
 		// turns in game thus far

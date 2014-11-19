@@ -82,8 +82,14 @@ public abstract class Player {
 	 */
 	public boolean attack(Node from, Node to, int num) {
 		boolean error = true;
+		// from node is null
+		if (from == null)
+			showError("ATTACK ERROR: Tried to attack from null instead of a node!");
+		// to node is null
+		else if (to == null)
+			showError("ATTACK ERROR: Tried to attack null instead of a node!");
 		// from node isn't owned by this player
-		if (from.getOwner() != this)
+		else if (from.getOwner() != this)
 			showError("ATTACK ERROR: Tried to attack from an unowned node!");
 		// to node is owned by this player
 		else if (to.getOwner() == this)
@@ -191,8 +197,13 @@ public abstract class Player {
 	 */
 	public boolean fortify(Node from, Node to, int num) {
 		boolean error = true;
+		// one of the nodes is null
+		if (from == null)
+			showError("FORTIFY ERROR: Tried to transfer from null instead of a node!");
+		else if (to == null)
+			showError("FORTIFY ERROR: Tried to transfer to null instead of a node!");
 		// one of the nodes isn't owned by this player
-		if (from.getOwner() != this)
+		else if (from.getOwner() != this)
 			showError("FORTIFY ERROR: Tried to transfer from an unowned node!");
 		else if (to.getOwner() != this)
 			showError("FORTIFY ERROR: Tried to transfer to an unowned node!");
