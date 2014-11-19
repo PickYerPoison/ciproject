@@ -131,15 +131,22 @@ public class Game {
 			default: inPlay = 0; System.out.println("SETUP ERROR: Invalid number of players!");
 		}
 		
-		// have the players distribute their pieces
+		// have the players distribute their units
 		for (int i = 0; i < units; i++) {
 			for (Player player : players)
 				graph.placeUnit(player.place(), player);
 		}
 		
+		// turns in game thus far
+		int turns = 0;
+		int maxTurns = 500;
+		
 		// cycle through players
 		while (inPlay > 1) {
 			inPlay = 0;
+			
+			System.out.println("Starting turn " + turns + "...");
+			
 			for (Player player : players) {
 				if (player.hasLost() == false) {
 					inPlay++;
@@ -149,7 +156,18 @@ public class Game {
 					player.turn();
 				}
 			}
+			
+			// increase the turn counter
+			turns++;
+			
+			// break out of the loop if maxTurns was exceeded
+			if (turns > maxTurns) {
+				System.out.println("Maximum turns exceeded. Ending game...");
+				break;
+			}
 		}
+
+		System.out.println("The game took " + turns + " turns.");
 		
 		// declare the winner if no error occurred
 		if (inPlay == 1) {

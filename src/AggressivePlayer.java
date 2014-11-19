@@ -7,7 +7,6 @@
  *
  */
 public class AggressivePlayer extends Player {
-
 	/**
 	 * 
 	 */
@@ -15,6 +14,14 @@ public class AggressivePlayer extends Player {
 		// TODO Auto-generated constructor stub
 	}
 
+	/**
+	 * @param n
+	 */
+	public AggressivePlayer(String n) {
+		super(n);
+		// TODO Auto-generated constructor stub
+	}
+	
 	/* (non-Javadoc)
 	 * @see Player#defend(Node, Node, int)
 	 */

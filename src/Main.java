@@ -26,6 +26,7 @@ public class Main {
 		game.setupMap(riskMap);
 		
 		// Add the players (between 3 and 6).
-		// game.addPlayer(new DefensivePlayer());
+		game.addPlayer(new DefensivePlayer());
+		game.addPlayer(new DefensivePlayer());
 	}
 }

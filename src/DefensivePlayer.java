@@ -18,6 +18,14 @@ public class DefensivePlayer extends Player {
 		name = "DefensivePlayer";
 	}
 
+	/**
+	 * Constructor for the DefensivePlayer class that sets the name.
+	 * @param n The name to give the player.
+	 */
+	public DefensivePlayer(String n) {
+		super(n);
+	}
+
 	/* (non-Javadoc)
 	 * @see Player#defend(Node, Node, int)
 	 */

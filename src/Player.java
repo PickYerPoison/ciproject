@@ -21,6 +21,14 @@ public abstract class Player {
 	public Player() { }
 	
 	/**
+	 * Constructor for the Player class that sets the name. 
+	 * @param n The name to give the player.
+	 */
+	public Player(String n) {
+		name = n;
+	}
+	
+	/**
 	 * Returns the AI's personal name. Used for identifying what code each AI is
 	 * running.
 	 * @return The AI's personal name as a string.
