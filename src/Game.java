@@ -31,84 +31,20 @@ public class Game {
 	/**
 	 * Sets up the Risk map for use by connecting nodes until there are a specified
 	 * number of nodes of each degree (specifying degrees 2 through 6).
-	 * @param nodes Integer array of size 5 specifying how many nodes of each degree to add.
+	 * @param map Integer array of integer arrays specifying what to link each node to.
 	 */
-	public void setupMap(int[] nodes) {
-		//  number of nodes that still need to be adjusted
-		int toAdjust = 0;
-		for (int i = 0; i < 5; i++)
-			toAdjust += nodes[i];
-			
-		// create all the nodes
-		for (int i = 0; i < toAdjust; i++) {
+	public void setupMap(int[][] map) {
+		// add all the nodes
+		for (@SuppressWarnings("unused") int[] x : map) {
 			graph.addNode();
 		}
 		
-		
-		// bring all nodes to degree 1
-		Node n1 = graph.getNodeWithAdj(0, 1);
-		Node n2 = graph.getNodeWithAdj(0, 2);
-		while (n2 != null) {
-			graph.addAdj(n1, n2);
-			n1 = graph.getNodeWithAdj(0, 1);
-			n2 = graph.getNodeWithAdj(0, 2);
-		}
-		
-		// bring all nodes to degree 2
-		n1 = graph.getNodeWithAdj(1, 1);
-		n2 = graph.getNodeWithAdj(1, 2);
-		while (n2 != null) {
-			graph.addAdj(n1, n2);
-			n1 = graph.getNodeWithAdj(1, 1);
-			n2 = graph.getNodeWithAdj(1, 2);
-		}
-		
-		// reduce the number of nodes left to adjust
-		toAdjust -= nodes[0];
-		
-		// bring toAdjust nodes to degree 3
-		n1 = graph.getNodeWithAdj(2, 1);
-		n2 = graph.getNodeWithAdj(2, 2);
-		for (int i = 0; i < toAdjust; i++) {
-			n1.addAdj(n2);
-			n1 = graph.getNodeWithAdj(2, 1);
-			n2 = graph.getNodeWithAdj(2, 2);
-		}
-		
-		// reduce the number of nodes left to adjust
-		toAdjust -= nodes[1];
-		
-		// bring toAdjust nodes to degree 4
-		n1 = graph.getNodeWithAdj(3, 1);
-		n2 = graph.getNodeWithAdj(3, 2);
-		for (int i = 0; i < toAdjust; i++) {
-			n1.addAdj(n2);
-			n1 = graph.getNodeWithAdj(3, 1);
-			n2 = graph.getNodeWithAdj(3, 2);
-		}
-		
-		// reduce the number of nodes left to adjust
-		toAdjust -= nodes[2];
-		
-		// bring toAdjust nodes to degree 5
-		n1 = graph.getNodeWithAdj(4, 1);
-		n2 = graph.getNodeWithAdj(4, 2);
-		for (int i = 0; i < toAdjust; i++) {
-			n1.addAdj(n2);
-			n1 = graph.getNodeWithAdj(4, 1);
-			n2 = graph.getNodeWithAdj(4, 2);
-		}
-		
-		// reduce the number of nodes left to adjust
-		toAdjust -= nodes[3];
-		
-		// bring toAdjust nodes to degree 6
-		n1 = graph.getNodeWithAdj(5, 1);
-		n2 = graph.getNodeWithAdj(5, 2);
-		for (int i = 0; i < toAdjust; i++) {
-			n1.addAdj(n2);
-			n1 = graph.getNodeWithAdj(5, 1);
-			n2 = graph.getNodeWithAdj(5, 2);
+		// link the nodes
+		int index = 0;
+		for (Node node : graph.getNodes()) {
+			for (int x : map[index])
+				node.addAdj(graph.getNodes().get(x));
+			index++;
 		}
 	}
 
@@ -139,35 +75,9 @@ public class Game {
 			}
 		}
 		
-		/*
-		// test of the threat level
-		int degree = 3;
-		Node threatNode = graph.getNodeWithAdj(degree, 2);
-		
-		// test with range 1
-		int threatUnits = threatNode.getUnits();
-		int threat = graph.getThreat(1, threatNode);
-		int calcThreat = 0;
-		int belongToPlayer = 0;
-		int totalUnits = 0;
-		for (Node n : threatNode.getAdj()) {
-			if (n.getOwner() != threatNode.getOwner()) {
-				calcThreat += n.getUnits();
-				totalUnits += n.getUnits();
-			}
-			else
-				belongToPlayer++;
-		}
-		
-		System.out.println("Units at threatened node: " + threatUnits);
-		System.out.println("Total units not belonging to player: " + totalUnits);
-		System.out.println("Total nodes not belonging to player: " + (degree - belongToPlayer));
-		System.out.println("For the second node with degree " + degree + ": does " + threat + " = " + calcThreat + "?");
-		*/
-		
 		// turns in game thus far
 		int turns = 0;
-		int maxTurns = 10000;
+		int maxTurns = 500;
 		
 		// cycle through players
 		while (inPlay > 1) {
@@ -217,14 +127,15 @@ public class Game {
 				}
 			}
 		}
-		else {
+		else
 			System.out.println(inPlay + " players remain. The match is a tie.");
-			
-			// output summaries for each player
-			for (Player player : players) {
-				System.out.println("-------------------");
-				System.out.println("Player " + player.getName() + (player.hasLost() ? " LOST." : " SURVIVED."));
-				System.out.print(player);
+		
+		// output summaries for each player
+		for (Player player : players) {
+			System.out.println("-------------------");
+			System.out.println("Player " + player.getName() + (player.hasLost() ? " LOST." : " SURVIVED."));
+			System.out.print(player);
+			if (!player.hasLost()) {
 				System.out.println("        Owned nodes: " + graph.getNumOwnedNodes(player));
 				int totalUnits = 0;
 				for (Node node : graph.getOwnedNodes(player))
@@ -232,11 +143,6 @@ public class Game {
 				System.out.println("         Units left: " + totalUnits);
 			}
 		}
-		
-		// make sure all the nodes are actually connected
-		Node startNode = graph.getNodeWithAdj(6, 1);
-		System.out.println("Connected nodes: " + startNode.getNumNodes());
-		
 		
 		// unload any specified assets
 		if (unloadPlayers) {
