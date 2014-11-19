@@ -10,27 +10,15 @@ import java.util.Arrays;
  */
 public abstract class Player {
 
-	private
-		Graph graph;
+	protected
+		Graph graph = null;
 		String name = "Default";
+		int range = 3;
 	
 	/**
-	 * Constructor for the Player class.
-	 * @param g The graph to link this player to.
+	 * Zero argument constructor for the Player class. 
 	 */
-	public Player(Graph g) {
-		graph = g;
-	}
-	
-	/**
-	 * Extended constructor for the Player class.
-	 * @param g The graph to link this player to.
-	 * @param n The player's name.
-	 */
-	public Player(Graph g, String n) {
-		graph = g;
-		name = n;
-	}
+	public Player() { }
 	
 	/**
 	 * Returns the AI's personal name. Used for identifying what code each AI is
@@ -39,6 +27,20 @@ public abstract class Player {
 	 */
 	public String getName() {
 		return name;
+	}
+	
+	public void setName(String n) {
+		name = n;
+		return;
+	}
+	
+	/**
+	 * Sets the player's associated graph.
+	 * @param g The graph to associate the player with. 
+	 */
+	public void setGraph(Graph g) {
+		graph = g;
+		return;
 	}
 	
 	/**
@@ -88,7 +90,7 @@ public abstract class Player {
 		else if (num < 0)
 			showError("ATTACK ERROR: Tried to attack with a negative number of units!");
 		// nodes aren't adjacent
-		else if (from.getAdjacent().contains(to) == false)
+		else if (from.getAdj().contains(to) == false)
 			showError("ATTACK ERROR: Tried to attack a non-adjacent node!");
 		// no errors - request that the defender defend
 		else {
@@ -134,8 +136,14 @@ public abstract class Player {
 				
 				// see if the attacker won
 				if (to.getUnits() - attackerWins <= 0) {
+					// subtract defender wins from units available to move
+					from.addUnits(-defenderWins);
+					
 					// check how many units to move
 					int move = occupy(from, to);
+					
+					// add them back in, in case an error occurs
+					from.addUnits(defenderWins);
 					
 					// too many units being moved
 					if (move >= from.getUnits())
@@ -190,7 +198,7 @@ public abstract class Player {
 		else if (num < 0)
 			showError("FORTIFY ERROR: Tried to transfer a negative number of units!");
 		// nodes aren't adjacent
-		else if (from.getAdjacent().contains(to) == false)
+		else if (from.getAdj().contains(to) == false)
 			showError("FORTIFY ERROR: Tried to transfer to a non-adjacent node!");
 		// no errors - move the units
 		else {

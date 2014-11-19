@@ -21,6 +21,22 @@ public class Graph {
 	}
 	
 	/**
+	 * Gets an ArrayList<Node> of all the nodes.
+	 * @return ArrayList<Node> consisting of all the nodes.
+	 */
+	public ArrayList<Node> getNodes() {
+		return nodes;
+	}
+	
+	/**
+	 * Clears all nodes from the graph.
+	 */
+	public void clear() {
+		nodes.clear();
+		nodes.trimToSize();
+	}
+	
+	/**
 	 * Adds a new node to the graph.
 	 */
 	public void addNode() {
@@ -33,9 +49,9 @@ public class Graph {
 	 * @param n1 The first node.
 	 * @param n2 The second node.
 	 */
-	public void addAdjacent(Node n1, Node n2) {
-		n1.addAdjacent(n2);
-		n2.addAdjacent(n1);
+	public void addAdj(Node n1, Node n2) {
+		n1.addAdj(n2);
+		n2.addAdj(n1);
 		return;
 	}
 	
@@ -45,9 +61,9 @@ public class Graph {
 	 * @param n How many nodes in the process should look.
 	 * @return The nth suitable node, or null if less than n were found.
 	 */
-	public Node getNodeWithAdjacency(int adj, int n) {
+	public Node getNodeWithAdj(int adj, int n) {
 		for (Node node : nodes) {
-			if (node.getAdjacent().size() == adj) {
+			if (node.getAdj().size() == adj) {
 				if (n == 1) {
 					return node;
 				}
@@ -58,6 +74,34 @@ public class Graph {
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Returns the number of nodes in the graph with a specified degree.
+	 * @param d Integer degree for the nodes to have.
+	 * @return Number of nodes with the specified degree.
+	 */
+	public int getNumNodesWithDegree(int d) {
+		int num = 0;
+		for (Node node : nodes) {
+			if (node.getAdj().size() == d)
+				num++;
+		}
+		return num;
+	}
+	
+	/**
+	 * Returns an ArrayList<Node> of all the nodes in the graph with a specified degree.
+	 * @param d Integer degree for the nodes to have.
+	 * @return ArrayList<Node> of the nodes.
+	 */
+	public ArrayList<Node> getNodesWithDegree(int d) {
+		ArrayList<Node> toReturn = new ArrayList<Node>(0);
+		for (Node node : nodes) {
+			if (node.getAdj().size() == d)
+				toReturn.add(node);
+		}
+		return toReturn;
 	}
 	
 	/**
@@ -78,7 +122,7 @@ public class Graph {
 	/**
 	 * Returns an ArrayList<Node> consisting of all the nodes owned by a given player.
 	 * @param player The player making the request.
-	 * @return An ArrayList of the nodes owned.
+	 * @return An ArrayList<Node> of the nodes owned.
 	 */
 	public ArrayList<Node> getOwnedNodes(Player player) {
 		ArrayList<Node> ownedNodes = new ArrayList<Node>(0);
@@ -110,8 +154,11 @@ public class Graph {
 	public boolean placeUnit(Node node, Player player) {
 		boolean error = true;
 		
+		// no node was given
+		if (node == null)
+			player.showError("PLACE ERROR: Tried to put a unit in null instead of a node!");
 		// the node is owned by a different player
-		if (node.getOwner() != null && node.getOwner() != player)
+		else if (node.getOwner() != null && node.getOwner() != player)
 			player.showError("PLACE ERROR: Tried to put a unit an another player's node!");
 		else {
 			node.addUnits(1);

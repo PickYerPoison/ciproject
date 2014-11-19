@@ -16,47 +16,6 @@ public class Game {
 	public Game() {
 		graph = new Graph();
 		players = new ArrayList<Player>(0);
-		
-		// set up the map
-		setupMap();
-		
-		// add players
-		int inPlay = 0; // increase this counter whenever you add a player!
-		
-		// determine how many pieces each player will start with
-		int pieces = 0;
-		switch (inPlay) {
-			case 3: pieces = 35; break;
-			case 4: pieces = 30; break;
-			case 5: pieces = 25; break;
-			case 6: pieces = 20; break;
-			default: pieces = 0;
-		}
-		
-		// have the players distribute their pieces
-		for (int i = 0; i < pieces; i++) {
-			for (Player player : players)
-				graph.placeUnit(player.place(), player);
-		}
-		
-		// cycle through players
-		while (inPlay > 1) {
-			for (Player player : players) {
-				if (player.hasLost() == false) {
-					int newUnits = graph.getNumOwnedNodes(player)/3;
-					for (int i = 0; i < newUnits; i++)
-						graph.placeUnit(player.place(), player);
-					player.turn();
-				}
-			}
-		}
-		
-		// declare the winner
-		for (Player player : players) {
-			if (player.hasLost() == false) {
-				System.out.println("The winner of the match is " + player.getName() + ".");
-			}
-		}
 	}
 	
 	/**
@@ -65,23 +24,21 @@ public class Game {
 	 */
 	public void addPlayer(Player player) {
 		players.add(player);
+		player.setGraph(graph);
 		return;
 	}
 	
 	/**
-	 * Sets up the Risk map for use by connecting nodes until there are
-	 * the correct number of nodes of each degree.
-	 * Degree	Nodes
-	 * 2		5
-	 * 3		13
-	 * 4		12
-	 * 5		7
-	 * 6		5
+	 * Sets up the Risk map for use by connecting nodes until there are a specified
+	 * number of nodes of each degree (specifying degrees 2 through 6).
+	 * @param nodes Integer array of size 5 specifying how many nodes of each degree to add.
 	 */
-	public void setupMap() {
+	public void setupMap(int[] nodes) {
 		//  number of nodes that still need to be adjusted
-		int toAdjust = 5 + 13 + 12 + 7 + 5;
-		
+		int toAdjust = 0;
+		for (int i = 0; i < 5; i++)
+			toAdjust += nodes[i];
+			
 		// create all the nodes
 		for (int i = 0; i < toAdjust; i++) {
 			graph.addNode();
@@ -89,69 +46,134 @@ public class Game {
 		
 		
 		// bring all nodes to degree 1
-		Node n1 = graph.getNodeWithAdjacency(0, 1);
-		Node n2 = graph.getNodeWithAdjacency(0, 2);
+		Node n1 = graph.getNodeWithAdj(0, 1);
+		Node n2 = graph.getNodeWithAdj(0, 2);
 		while (n1 != null) {
-			graph.addAdjacent(n1, n2);
-			n1 = graph.getNodeWithAdjacency(0, 1);
-			n2 = graph.getNodeWithAdjacency(0, 2);
+			graph.addAdj(n1, n2);
+			n1 = graph.getNodeWithAdj(0, 1);
+			n2 = graph.getNodeWithAdj(0, 2);
 		}
 
 		// bring all nodes to degree 2
-		n1 = graph.getNodeWithAdjacency(1, 1);
-		n2 = graph.getNodeWithAdjacency(1, 2);
+		n1 = graph.getNodeWithAdj(1, 1);
+		n2 = graph.getNodeWithAdj(1, 2);
 		while (n1 != null) {
-			graph.addAdjacent(n1, n2);
-			n1 = graph.getNodeWithAdjacency(1, 1);
-			n2 = graph.getNodeWithAdjacency(1, 2);
+			graph.addAdj(n1, n2);
+			n1 = graph.getNodeWithAdj(1, 1);
+			n2 = graph.getNodeWithAdj(1, 2);
 		}
 		
 		// reduce the number of nodes left to adjust
-		toAdjust -= 5;
+		toAdjust -= nodes[0];
 		
 		// bring toAdjust nodes to degree 3
-		n1 = graph.getNodeWithAdjacency(2, 1);
-		n2 = graph.getNodeWithAdjacency(2, 2);
+		n1 = graph.getNodeWithAdj(2, 1);
+		n2 = graph.getNodeWithAdj(2, 2);
 		for (int i = 0; i < toAdjust; i++) {
-			n1.addAdjacent(n2);
-			n1 = graph.getNodeWithAdjacency(2, 1);
-			n2 = graph.getNodeWithAdjacency(2, 2);
+			n1.addAdj(n2);
+			n1 = graph.getNodeWithAdj(2, 1);
+			n2 = graph.getNodeWithAdj(2, 2);
 		}
 		
 		// reduce the number of nodes left to adjust
-		toAdjust -= 13;
+		toAdjust -= nodes[1];
 		
 		// bring toAdjust nodes to degree 4
-		n1 = graph.getNodeWithAdjacency(3, 1);
-		n2 = graph.getNodeWithAdjacency(3, 2);
+		n1 = graph.getNodeWithAdj(3, 1);
+		n2 = graph.getNodeWithAdj(3, 2);
 		for (int i = 0; i < toAdjust; i++) {
-			n1.addAdjacent(n2);
-			n1 = graph.getNodeWithAdjacency(3, 1);
-			n2 = graph.getNodeWithAdjacency(3, 2);
+			n1.addAdj(n2);
+			n1 = graph.getNodeWithAdj(3, 1);
+			n2 = graph.getNodeWithAdj(3, 2);
 		}
 		
 		// reduce the number of nodes left to adjust
-		toAdjust -= 12;
+		toAdjust -= nodes[2];
 		
 		// bring toAdjust nodes to degree 5
-		n1 = graph.getNodeWithAdjacency(4, 1);
-		n2 = graph.getNodeWithAdjacency(4, 2);
+		n1 = graph.getNodeWithAdj(4, 1);
+		n2 = graph.getNodeWithAdj(4, 2);
 		for (int i = 0; i < toAdjust; i++) {
-			n1.addAdjacent(n2);
-			n1 = graph.getNodeWithAdjacency(4, 1);
-			n2 = graph.getNodeWithAdjacency(4, 2);
+			n1.addAdj(n2);
+			n1 = graph.getNodeWithAdj(4, 1);
+			n2 = graph.getNodeWithAdj(4, 2);
 		}
 		
 		// reduce the number of nodes left to adjust
-		toAdjust -= 7;
+		toAdjust -= nodes[3];
 		
 		// bring toAdjust nodes to degree 6
-		n1 = graph.getNodeWithAdjacency(5, 1);
-		n2 = graph.getNodeWithAdjacency(5, 2);
+		n1 = graph.getNodeWithAdj(5, 1);
+		n2 = graph.getNodeWithAdj(5, 2);
 		for (int i = 0; i < toAdjust; i++) {
-			n1.addAdjacent(n2);
-			n1 = graph.getNodeWithAdjacency(5, 1);
-			n2 = graph.getNodeWithAdjacency(5, 2);
+			n1.addAdj(n2);
+			n1 = graph.getNodeWithAdj(5, 1);
+			n2 = graph.getNodeWithAdj(5, 2);
 		}
+	}
+
+	/**
+	 * Runs the game. The game map and the player list should already be set up!
+	 * @param unloadPlayers Boolean specifying whether the list of players should be reset afterwards.
+	 * @param unloadMap Boolean specifying whether the graph of nodes should be reset afterwards.
+	 */
+	public void runGame(boolean unloadPlayers, boolean unloadMap) {
+		// add players. if there's an error somewhere, inPlay is set to 0.
+		int inPlay = players.size();
+		
+		// determine how many units each player will start with
+		int units = 0;
+		switch (inPlay) {
+			case 3: units = 35; break;
+			case 4: units = 30; break;
+			case 5: units = 25; break;
+			case 6: units = 20; break;
+			default: inPlay = 0; System.out.println("SETUP ERROR: Invalid number of players!");
+		}
+		
+		// have the players distribute their pieces
+		for (int i = 0; i < units; i++) {
+			for (Player player : players)
+				graph.placeUnit(player.place(), player);
+		}
+		
+		// cycle through players
+		while (inPlay > 1) {
+			inPlay = 0;
+			for (Player player : players) {
+				if (player.hasLost() == false) {
+					inPlay++;
+					int newUnits = graph.getNumOwnedNodes(player)/3;
+					for (int i = 0; i < newUnits; i++)
+						graph.placeUnit(player.place(), player);
+					player.turn();
+				}
+			}
+		}
+		
+		// declare the winner if no error occurred
+		if (inPlay == 1) {
+			for (Player player : players) {
+				if (player.hasLost() == false) {
+					System.out.println("The winner of the match is " + player.getName() + ".");
+				}
+			}
+		}
+		
+		// unload any specified assets
+		if (unloadPlayers) {
+			players.clear();
+			players.trimToSize();
+		}
+		if (unloadMap) {
+			graph.clear();
+		}
+	}
+	
+	/**
+	 * Overloaded runGame() that doesn't unload anything afterwards.
+	 */
+	public void runGame() {
+		runGame(false, false);
 	}
 }
