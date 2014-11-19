@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * 
@@ -47,6 +46,10 @@ public class DefensivePlayer extends Player {
 		int toThreat = to.getThreat(range);
 		int fromThreat = from.getThreat(range);
 		
+		// don't divide by zero!
+		if (fromThreat == 0)
+			return from.getUnits()-1;
+		
 		/* create a ratio; err on the side of defending the older owned node
 		 * ratio = to / from
 		 * uses two equations: to + from = units, and to = ratio * from
@@ -61,7 +64,6 @@ public class DefensivePlayer extends Player {
 		int toSend  = (int)(ratio * (units / (ratio + 1)));
 		if (toSend < 1)
 			toSend = 1;
-		
 		return toSend;
 	}
 
@@ -188,17 +190,17 @@ public class DefensivePlayer extends Player {
 				
 				// iterate through to find the most threatened node
 				int max = 0;
-				int mIndex = 0;
-				for (int i = 0; i < nodes.size(); i++) {
-					int threat = nodes.get(i).getThreat(range);
+				Node toPlace = nodes.get(0); 
+				for (Node node : nodes) {
+					int threat = node.getThreat(range);
 					if (threat > max) {
 						max = threat;
-						mIndex = i;
+						toPlace = node;
 					}
 				}
 				
 				// place the unit at the most threatened node
-				return nodes.get(mIndex);
+				return toPlace;
 			}
 		}
 		
@@ -210,6 +212,7 @@ public class DefensivePlayer extends Player {
 	 */
 	@Override
 	void turn() {
+		/*
 		// get all owned nodes
 		Node[] nodesArray = graph.getOwnedNodes(this).toArray(new Node[0]);
 		
@@ -218,6 +221,10 @@ public class DefensivePlayer extends Player {
 		
 		// turn it back into an ArrayList to make other methods easier
 		ArrayList<Node> nodes = new ArrayList<Node>(Arrays.asList(nodesArray));
+		*/
+		
+		// get all owned nodes
+		ArrayList<Node> nodes = graph.getOwnedNodes(this);
 		
 		/*
 		 * ATTACK STEP
@@ -231,7 +238,7 @@ public class DefensivePlayer extends Player {
 			// get the nodes adjacent to this one
 			ArrayList<Node> adjNodes = node.getAdj();
 			
-			// iterate through the enemy nodes
+			// iterate through the adjacent nodes
 			for (Node adjNode : adjNodes) {
 				// while we have units and while the adjacent node belongs to the enemy and has fewer units than this one, attack
 				while (node.getUnits() > 1 && adjNode.getOwner() != this && adjNode.getUnits() <= node.getUnits()) {
@@ -250,36 +257,95 @@ public class DefensivePlayer extends Player {
 		 * FORTIFY STEP 
 		 */
 		// move as many units as possible between two nodes with the highest difference in threat levels
-		int maxDif = 0;
+		/*int maxDif = 0;
 		Node from = null;
 		Node to = null;
+		
+		nodes = graph.getOwnedNodes(this);
+		
 		for (Node node : nodes) {
-			// get the adjacent nodes
-			ArrayList<Node> adjNodes = node.getAdj();
-			
-			// prune out nodes we don't own
-			index = 0;
-			while (index < adjNodes.size()) {
-				if (adjNodes.get(index).getOwner() != this)
-					adjNodes.remove(index);
-				else
-					index++;
-			}
-			
-			// compare the difference in threat levels for each adjacent node
-			for (Node adjNode : adjNodes) {
-				int threatDif = node.getThreat(range) - adjNode.getThreat(range);
-				if (threatDif > maxDif) {
-					maxDif = threatDif;
-					to = adjNode;
-					from = node;
+			// can this node transfer any units?
+			if (node.getUnits() > 1) {
+				// get the adjacent nodes
+				ArrayList<Node> adjNodes = node.getAdj();
+				
+				// prune out nodes we don't own
+				index = 0;
+				while (index < adjNodes.size()) {
+					if (adjNodes.get(index).getOwner() != this)
+						adjNodes.remove(index);
+					else
+						index++;
+				}
+				
+				// compare the difference in threat levels for each adjacent node
+				for (Node adjNode : adjNodes) {
+					int threatDif = node.getThreat(range) - adjNode.getThreat(range);
+					if (threatDif >= maxDif) {
+						maxDif = threatDif;
+						to = adjNode;
+						from = node;
+					}
 				}
 			}
+		}*/
+		
+		// move units to the most threatened node adjacent to enemies from the least threatened adjacent node
+		Node to = null;
+		Node from = null;
+		
+		// get all owned nodes
+		nodes = graph.getOwnedNodes(this);
+		
+		// eliminate nodes not adjacent to other owned nodes
+		index = 0;
+		while (index < nodes.size()) {
+			boolean hasAdj = false;
+			for (Node adj : nodes.get(index).getAdj()) {
+				if (adj.getOwner() == this) {
+					hasAdj = true;
+					break;
+				}
+			}
+			if (!hasAdj)
+				nodes.remove(index);
+			else
+				index++;
 		}
 		
-		// fortify using the given nodes and amounts
-		fortify(from, to, from.getUnits()-1);
+		// if there are no nodes left, don't fortify
+		if (nodes.size() > 1) {
 		
-		return;
+			// find the most threatened node in the group
+			int maxThreat = -1;
+			Node mostThreatened = null;
+			for (Node node : nodes) {
+				int threat = node.getThreat(range);
+				if (threat > maxThreat) {
+					maxThreat = threat;
+					mostThreatened = node;
+				}
+			}
+			
+			// find the least threatened node adjacent to it
+			int minThreat = maxThreat;
+			Node leastThreatened = null;
+			for (Node node : mostThreatened.getAdj()) {
+				if (node.getOwner() == this) {
+					int threat = node.getThreat(range);
+					if (threat < minThreat) {
+						minThreat = threat;
+						leastThreatened = node;
+					}
+				}
+			}
+			
+			to = mostThreatened;
+			from = leastThreatened;
+			
+			// fortify using the given nodes and amounts, or don't fortify if no nodes were selected
+			if (from != null && to != null && from.getUnits()-1 > 0)
+				fortify(from, to, from.getUnits()-1);
+		}
 	}
 }

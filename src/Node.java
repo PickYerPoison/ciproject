@@ -111,7 +111,7 @@ public class Node implements Comparable<Node> {
 		}
 		
 		// range determines distance to check, so end this feeler if it's gone too far
-		if (range > 0) {			
+		if (range > 1) {			
 			// iterate through the adjacent nodes
 			for (Node node : adjacent) {
 				// get the node's threat level if:

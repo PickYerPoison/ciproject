@@ -56,7 +56,6 @@ public class BalancedPlayer extends Player {
 	@Override
 	void turn() {
 		// TODO Auto-generated method stub
-
 	}
 
 }

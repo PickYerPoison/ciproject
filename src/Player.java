@@ -153,11 +153,16 @@ public abstract class Player {
 					// subtract defender wins from units available to move
 					from.addUnits(-defenderWins);
 					
+					// transfer ownership
+					Player oldOwner = to.getOwner();
+					to.setOwner(this);
+					
 					// check how many units to move
 					int move = occupy(from, to);
 					
-					// add them back in, in case an error occurs
+					// reverse changes, in case an error occurs
 					from.addUnits(defenderWins);
+					to.setOwner(oldOwner);
 					
 					// too many units being moved
 					if (move >= from.getUnits())
@@ -170,6 +175,11 @@ public abstract class Player {
 						showError("OCCUPY ERROR: Tried to move a negative number of units!");
 					// no errors - exchange ownership and units
 					else {
+						System.out.println("Player " + getName() + " is making an attack against " + to.getOwner().getName() + "!");
+						System.out.println("Player " + getName() + " won! Has " + (graph.getNumOwnedNodes(this)+1) + " nodes now.");
+						System.out.println("Player " + getName() + " is moving " + move + " units in.");
+						if (to.getOwner().hasLost())
+							System.out.println("Player " + to.getOwner().getName() + " has lost!");
 						to.setOwner(this);
 						to.addUnits(-to.getUnits());
 						from.addUnits(-defenderWins);
@@ -179,8 +189,10 @@ public abstract class Player {
 				}
 				// otherwise, just process unit losses
 				else {
+					System.out.println("Player " + getName() + " is making an attack against " + to.getOwner().getName() + "!");
 					from.addUnits(-defenderWins);
 					to.addUnits(-attackerWins);
+					error = false;
 				}
 			}
 		}
@@ -207,6 +219,9 @@ public abstract class Player {
 			showError("FORTIFY ERROR: Tried to transfer from an unowned node!");
 		else if (to.getOwner() != this)
 			showError("FORTIFY ERROR: Tried to transfer to an unowned node!");
+		// the two nodes are the same
+		if (to == from)
+			showError("FORTIFY ERROR: Tried to transfer units to the same node!");
 		// more units being transferred than are available
 		else if (num >= from.getUnits())
 			showError("FORTIFY ERROR: Tried to transfer too many units!");

@@ -55,7 +55,6 @@ public class AggressivePlayer extends Player {
 	@Override
 	void turn() {
 		// TODO Auto-generated method stub
-
 	}
 
 }

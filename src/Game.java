@@ -169,7 +169,7 @@ public class Game {
 			}
 		}
 
-		System.out.println("The game took " + turns + " turns.");
+		System.out.println("The game took " + (turns - 1) + " turns.");
 		
 		// declare the winner if no error occurred
 		if (inPlay == 1) {
@@ -179,6 +179,8 @@ public class Game {
 				}
 			}
 		}
+		else
+			System.out.println(inPlay + " players remain. The match is a tie.");
 		
 		// unload any specified assets
 		if (unloadPlayers) {
