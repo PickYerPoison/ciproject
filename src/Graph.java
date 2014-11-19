@@ -168,4 +168,30 @@ public class Graph {
 		
 		return error;
 	}
+	
+	/**
+	 * Wrapper for the node threat calculation.
+	 * @param range How many nodes out to check.
+	 * @param node The node to start at.
+	 * @return The threat level of the node.
+	 */
+	public int getThreat(int range, Node node) {
+		int threat = node.getThreat(range);
+		for (Node n : nodes)
+			n.setChecked(false);
+		return threat;
+	}
+	
+	/**
+	 * Wrapper for the node adjacency threat calculation.
+	 * @param range How many nodes out to check.
+	 * @param node The node to start at.
+	 * @return The threat level of the node.
+	 */
+	public int getAdjThreat(int range, Node node) {
+		int threat = node.getAdjThreat(range+1);
+		for (Node n : nodes)
+			n.setChecked(false);
+		return threat;
+	}
 }

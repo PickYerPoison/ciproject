@@ -10,9 +10,10 @@ import java.util.ArrayList;
 public class Node implements Comparable<Node> {
 	
 	private
-		Player owner;
-		int units;
-		ArrayList<Node> adjacent;
+		Player owner = null;
+		int units = 0;
+		ArrayList<Node> adjacent = new ArrayList<Node>(0);
+		boolean checked = false;
 	
 	/*
 	 *	CONSTRUCTORS 
@@ -21,11 +22,7 @@ public class Node implements Comparable<Node> {
 	 * Constructor for the Node class. Initializes the owner to null
 	 * and the number of units to 0 and creates the adjacency ArrayList.
 	 */
-	public Node() {
-		owner = null;
-		units = 0;
-		adjacent = new ArrayList<Node>(0);
-	}
+	public Node() {	}
 	
 	/*
 	 * 	ACCESSORS
@@ -52,6 +49,14 @@ public class Node implements Comparable<Node> {
 	 */
 	public ArrayList<Node> getAdj() {
 		return adjacent;
+	}
+	
+	/**
+	 * Gets if the node has been checked.
+	 * @return Boolean indicating if the node has been checked yet.
+	 */
+	public boolean getChecked() {
+		return checked;
 	}
 
 	/*
@@ -84,6 +89,14 @@ public class Node implements Comparable<Node> {
 		return;
 	}
 	
+	/**
+	 * Sets the checked boolean.
+	 * @param b What to set checked to.
+	 */
+	public void setChecked(boolean b) {
+		checked = b;
+	}
+	
 	/*
 	 * 	UTILITY
 	 */
@@ -92,47 +105,63 @@ public class Node implements Comparable<Node> {
 	 * Generates an integer value representing the threat to this node. The value is based on the
 	 * relative distance of and number of units within other players' nodes. An individual node's
 	 * contribution to the threat level is given by (number of units) * (range at node).
-	 * @param checked ArrayList<Node> consisting of already-checked nodes.
-	 * @param player The calling node's owner.
 	 * @param range Integer representing how much further out to check.
+	 * @param player The calling node's owner.
 	 * @return An integer representing the threat to the node.
 	 */
-	public int getThreat(int range, Player player, ArrayList<Node> checked) {
-		// add this node to the list of checked nodes
-		checked.add(this);
+	public int getThreat(int range, Player player) {
+		// indicate that this node has been checked
+		setChecked(true);
 		
 		// create variable to store this node's accumulated threat
 		int threat = 0;
 		
-		// add the threat level for this node if it's not owned by the player
-		if (getOwner() != player) {
-			// because the range diminishes over distance, it multiplies instead of adds 
-			threat += getUnits() * range;
-		}
-		
 		// range determines distance to check, so end this feeler if it's gone too far
-		if (range > 1) {			
-			// iterate through the adjacent nodes
-			for (Node node : adjacent) {
-				// get the node's threat level if:
-				// - it is not owned by this player
-				// - it is not in the list of already checked nodes
-				if (node.getOwner() != player && checked.contains(node) == false) {
-					threat += node.getThreat(range-1, player, checked);
+		if (range >= 1) {
+			// because the range diminishes over distance, it multiplies instead of adds
+			threat += getUnits() * range;
+			System.out.print("+(" + getUnits() + "*" + range + ")");
+			
+			if (range > 1) {
+				// iterate through the adjacent nodes
+				for (Node node : getAdj()) {
+					// get the node's threat level if:
+					// - it is not owned by this player
+					// - it has not already been checked
+					if (node.getOwner() != player && node.getChecked() == false) {
+						threat += node.getThreat(range-1, player);
+					}
 				}
 			}
 		}
 		
+		// return this node's branching threat
 		return threat;
 	}
 	
 	/**
-	 * Initial getThreat call that automatically fills out values. 
-	 * @param range Integer representing how much further out to check.
+	 * Initial getThreat call that automatically fills out values.
+	 * Should only be called through the graph containing the nodes!
+	 * @param range Integer representing how many nodes out to check.
 	 * @return An integer representing the threat to the node.
 	 */
 	public int getThreat(int range) {
-		return getThreat(range, getOwner(), new ArrayList<Node>(0));
+		setChecked(true);
+		int threat = 0;
+		int foundNodes = 0;
+		System.out.print("Threat = 0");
+		for (Node node : getAdj()) {
+			// get the node's threat level if:
+			// - it is not owned by this player
+			// - it has not already been checked
+			if (node.getOwner() != getOwner() && node.getChecked() == false) {
+				foundNodes++;
+				threat += node.getThreat(range, getOwner());
+			}
+		}
+		System.out.println(" = " + threat);
+		System.out.println("I found " + foundNodes + " node(s) that fit.");
+		return threat;
 	}
 	
 	/**
@@ -140,14 +169,13 @@ public class Node implements Comparable<Node> {
 	 * based on the the relative distance of nodes not belonging to the node's player. An
 	 * individual node's contribution to  the threat level is based on its range from the
 	 * original calling node.
-	 * @param checked ArrayList<Node> consisting of already-checked nodes.
-	 * @param player The calling node's owner.
 	 * @param range Integer representing how much further out to check.
+	 * @param player The calling node's owner.
 	 * @return An integer representing the threat to the node.
 	 */
-	public int getAdjThreat(int range, Player player, ArrayList<Node> checked) {
-		// add this node to the list of checked nodes
-		checked.add(this);
+	public int getAdjThreat(int range, Player player) {
+		// marks this node as checked
+		setChecked(true);
 		
 		// create variable to store this node's accumulated threat
 		int threat = 0;
@@ -159,12 +187,12 @@ public class Node implements Comparable<Node> {
 		// range determines distance to check, so end this feeler if it's gone too far
 		if (range > 0) {
 			// iterate through the adjacent nodes
-			for (Node node : adjacent) {
+			for (Node node : getAdj()) {
 				// get the node's threat level if:
 				// - it is not owned by this player
 				// - it is not in the list of already checked nodes
-				if (node.getOwner() != player && checked.contains(node) == false) {
-					threat += node.getAdjThreat(range-1, player, checked);
+				if (node.getOwner() != player && node.getChecked() == false) {
+					threat += node.getAdjThreat(range-1, player);
 				}
 			}
 		}
@@ -173,12 +201,13 @@ public class Node implements Comparable<Node> {
 	}
 	
 	/**
-	 * Initial getAdjacencyThreat call that automatically fills out values. 
+	 * Initial getAdjacencyThreat call that automatically fills out values.
+	 * Should only be called through the graph containing the node! 
 	 * @param range Integer representing how much further out to check.
 	 * @return An integer representing the threat to the node.
 	 */
 	public int getAdjThreat(int range) {
-		return getAdjThreat(range, getOwner(), new ArrayList<Node>(0));
+		return getAdjThreat(range, getOwner());
 	}
 	
 	/* (non-Javadoc)

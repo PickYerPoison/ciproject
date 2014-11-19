@@ -43,8 +43,8 @@ public class DefensivePlayer extends Player {
 	@Override
 	int occupy(Node from, Node to) {
 		// move units based on a ratio of threat levels vs. current units
-		int toThreat = to.getThreat(range);
-		int fromThreat = from.getThreat(range);
+		int toThreat = graph.getThreat(range, to);
+		int fromThreat = graph.getThreat(range, from);
 		
 		// don't divide by zero!
 		if (fromThreat == 0)
@@ -79,11 +79,11 @@ public class DefensivePlayer extends Player {
 			ArrayList<Node> degNodes = graph.getNodesWithDegree(2);
 			
 			// find the node with the least adjacency threat using the default range
-			int min = degNodes.get(0).getAdjThreat(range);
+			int min = graph.getAdjThreat(range, degNodes.get(0));
 			Node toPlace = degNodes.get(0);
 			
 			for (Node node : degNodes) {
-				int adjThreat = node.getAdjThreat(range);
+				int adjThreat = graph.getAdjThreat(range, node);
 				if (adjThreat < min) {
 					min = adjThreat;
 					toPlace = node;
@@ -125,7 +125,7 @@ public class DefensivePlayer extends Player {
 					
 					// fill the array
 					for (int i = 0; i < toPlace.size(); i++)
-						adjThreat[i] = toPlace.get(i).getAdjThreat(range);
+						adjThreat[i] = graph.getAdjThreat(range, toPlace.get(i));
 					
 					// find the index of the node with the least adjacency threat
 					int min = adjThreat[0];
@@ -164,11 +164,11 @@ public class DefensivePlayer extends Player {
 						// are there multiple ones left?
 						else if (degNodes.size() > 1) {
 							// find the node with the least adjacency threat using the default range
-							int min = degNodes.get(0).getAdjThreat(range);
+							int min = graph.getAdjThreat(range, degNodes.get(0));
 							Node toReturn = degNodes.get(0);
 							
 							for (Node node : degNodes) {
-								int adjThreat = node.getAdjThreat(range);
+								int adjThreat = graph.getAdjThreat(range, node);
 								if (adjThreat < min) {
 									min = adjThreat;
 									toReturn = node;
@@ -192,7 +192,7 @@ public class DefensivePlayer extends Player {
 				int max = 0;
 				Node toPlace = nodes.get(0); 
 				for (Node node : nodes) {
-					int threat = node.getThreat(range);
+					int threat = graph.getThreat(range, node);
 					if (threat > max) {
 						max = threat;
 						toPlace = node;
@@ -320,7 +320,7 @@ public class DefensivePlayer extends Player {
 			int maxThreat = -1;
 			Node mostThreatened = null;
 			for (Node node : nodes) {
-				int threat = node.getThreat(range);
+				int threat = graph.getThreat(range, node);
 				if (threat > maxThreat) {
 					maxThreat = threat;
 					mostThreatened = node;
@@ -332,7 +332,7 @@ public class DefensivePlayer extends Player {
 			Node leastThreatened = null;
 			for (Node node : mostThreatened.getAdj()) {
 				if (node.getOwner() == this) {
-					int threat = node.getThreat(range);
+					int threat = graph.getThreat(range, node);
 					if (threat < minThreat) {
 						minThreat = threat;
 						leastThreatened = node;

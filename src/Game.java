@@ -139,6 +139,29 @@ public class Game {
 			}
 		}
 		
+		// test of the threat level
+		Node threatNode = graph.getNodeWithAdj(4, 2);
+		
+		// test with range 1
+		int threatUnits = threatNode.getUnits();
+		int threat = graph.getThreat(1, threatNode);
+		int calcThreat = 0;
+		int belongToPlayer = 0;
+		int totalUnits = 0;
+		for (Node n : threatNode.getAdj()) {
+			if (n.getOwner() != threatNode.getOwner()) {
+				calcThreat += n.getUnits();
+				totalUnits += n.getUnits();
+			}
+			else
+				belongToPlayer++;
+		}
+		
+		System.out.println("Units at threatened node: " + threatUnits);
+		System.out.println("Total units not belonging to player: " + totalUnits);
+		System.out.println("Total nodes belonging to player: " + belongToPlayer);
+		System.out.println("For the second node with degree 4: does " + threat + " = " + calcThreat + "?");
+		/*
 		// turns in game thus far
 		int turns = 0;
 		int maxTurns = 500;
@@ -179,9 +202,20 @@ public class Game {
 				}
 			}
 		}
-		else
+		else {
 			System.out.println(inPlay + " players remain. The match is a tie.");
-		
+			for (Player player : players) {
+				if (player.hasLost() == false) {
+					System.out.println("Summary for player " + player.getName() + ":");
+					System.out.println("Owned nodes: " + graph.getNumOwnedNodes(player));
+					int totalUnits = 0;
+					for (Node node : graph.getOwnedNodes(player))
+						totalUnits += node.getUnits();
+					System.out.println("Total units: " + totalUnits);
+				}
+			}
+		}
+		*/
 		// unload any specified assets
 		if (unloadPlayers) {
 			players.clear();
