@@ -13,8 +13,7 @@ public class DefensivePlayer extends Player {
 	 * Constructor for the DefensivePlayer class.
 	 */
 	public DefensivePlayer() {
-		super();
-		name = "DefensivePlayer";
+		super("DefensivePlayer");
 	}
 
 	/**
@@ -76,22 +75,38 @@ public class DefensivePlayer extends Player {
 		if (graph.getNumOwnedNodes(this) == 0) {
 			// place the first unit down in a defensive node (adjacency of 2)
 			// choose the one with the least adjacency threat
-			ArrayList<Node> degNodes = graph.getNodesWithDegree(2);
+			ArrayList<Node> degNodes = new ArrayList<Node>(0);
 			
-			// find the node with the least adjacency threat using the default range
-			int min = graph.getAdjThreat(range, degNodes.get(0));
-			Node toPlace = degNodes.get(0);
-			
-			for (Node node : degNodes) {
-				int adjThreat = graph.getAdjThreat(range, node);
-				if (adjThreat < min) {
-					min = adjThreat;
-					toPlace = node;
+			for (int i = 2; i <= 6; i++) {
+				degNodes = graph.getNodesWithDegree(i);
+				
+				// prune nodes belonging to other players
+				int index = 0;
+				while (index < degNodes.size()) {
+					if (degNodes.get(index).getOwner() != null)
+						degNodes.remove(index);
+					else
+						index++;
+				}
+				
+				// are there any possible candidates?
+				if (degNodes.size() > 0) {
+					// find the node with the least adjacency threat using the default range
+					int min = graph.getAdjThreat(range, degNodes.get(0));
+					Node toPlace = degNodes.get(0);
+					
+					for (Node node : degNodes) {
+						int adjThreat = graph.getAdjThreat(range, node);
+						if (adjThreat < min) {
+							min = adjThreat;
+							toPlace = node;
+						}
+					}
+					
+					// place a unit at that node
+					return toPlace;
 				}
 			}
-			
-			// place a unit at that node
-			return toPlace;
 		}
 		// if we already have units on the field
 		else {

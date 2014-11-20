@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * @author Graham Netherton
@@ -27,7 +28,11 @@ public class Game {
 		Arrays.fill(telemetry, 0);
 		telemetry[MIN_TURNS] = 999;
 	}
-
+	
+	public Graph getGraph() {
+		return graph;
+	}
+	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -42,7 +47,7 @@ public class Game {
 				case TOTAL_TURNS:	out += "Avg turns/game: " + (telemetry[i]/telemetry[TOTAL_GAMES]) + "\n"; break;
 				case MIN_TURNS: 	out += " Shortest game: " + telemetry[i] + " turns\n"; break;
 				case MAX_TURNS:		out += "  Longest game: " + telemetry[i] + " turns\n"; break;
-				case TIES:			out += "     Tie games: " + telemetry[i] + "\n"; break;
+				case TIES:			out += " Game timeouts: " + telemetry[i] + "\n"; break;
 			}
 		}
 		
@@ -65,6 +70,26 @@ public class Game {
 	public void addPlayer(Player player) {
 		players.add(player);
 		player.setGraph(graph);
+		return;
+	}
+	
+	public void randomizeStart() {
+		// create rng
+		Random r = new Random();
+		
+		// get the new starting player
+		Player startPlayer = players.get(r.nextInt(players.size()));
+		
+		// move all players to be behind the starting player
+		while (players.get(0) != startPlayer) {
+			// move the player at the start of the turn order to the back
+			players.add(players.get(0));
+			players.remove(0);
+		}
+		
+		// trim the playerlist's size
+		players.trimToSize();
+		
 		return;
 	}
 	
@@ -158,17 +183,20 @@ public class Game {
 			telemetry[MIN_TURNS] = turns;
 		
 		// update winner telemetry
-		if (inPlay == 1)
-			for (Player player : players)
+		if (inPlay == 1) {
+			for (Player player : players) {
 				if (player.hasLost() == false)
 					player.setTelemetry(7, player.getTelemetry(7)+1);
+			}
+		}
 		else
 			telemetry[TIES]++;
 		
 		// update player telemetry
-		for (Player player : players)
+		for (Player player : players) {
 			if (player.hasLost())
 				player.setTelemetry(8, player.getTelemetry(8)+1);
+		}
 		
 		// unload any specified assets
 		if (unloadPlayers) {

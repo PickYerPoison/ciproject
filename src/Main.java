@@ -1,8 +1,4 @@
 /**
- * 
- */
-
-/**
  * @author Graham
  *
  */
@@ -22,16 +18,24 @@ public class Main {
 				{21, 23, 24, 27, 29}, {23, 26}, {17, 19, 25, 30, 32, 34}, {20, 21, 25, 26, 30, 31}, 
 				{25, 28, 29, 31}, {29, 30, 38}, {19, 28, 33, 34}, {11, 18, 19, 32, 34, 35}, {28, 32, 33, 35, 37}, 
 				{33, 34, 36}, {35, 37}, {34, 36}, {31, 39, 40}, {38, 40, 41}, {38, 39, 41}, {39, 40} };
- 
+		
 		game.setupMap(riskMap);
 		
 		// Add the players (between 3 and 6).
-		game.addPlayer(new DefensivePlayer("DefP1"));
-		game.addPlayer(new DefensivePlayer("DefP2"));
-		game.addPlayer(new DefensivePlayer("DefP3"));
+		game.addPlayer(new DefensivePlayer());
+		game.addPlayer(new AggressivePlayer());
+		game.addPlayer(new BalancedPlayer());
+		//game.addPlayer(new DefensivePlayer("DefP2"));
+		//game.addPlayer(new AggressivePlayer("AggP2"));
+		//game.addPlayer(new BalancedPlayer("BalP2"));
+		//game.addPlayer(new DefensivePlayer("DefP3"));
+		//game.addPlayer(new AggressivePlayer("AggP3"));
+		//game.addPlayer(new BalancedPlayer("BalP3"));
 		
-		for (int i = 0; i < 1000; i++)
+		for (int i = 0; i < 1000; i++) {
+			game.randomizeStart();
 			game.runGame();
+		}
 		
 		System.out.print(game);
 	}
