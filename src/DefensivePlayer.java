@@ -59,6 +59,7 @@ public class DefensivePlayer extends Player {
 		 * -> to = ratio * (units / (ratio + 1)), round down
 		 */
 		double ratio = toThreat / fromThreat;
+		
 		int units = from.getUnits();
 		int toSend  = (int)(ratio * (units / (ratio + 1)));
 		if (toSend < 1)
@@ -73,7 +74,7 @@ public class DefensivePlayer extends Player {
 	Node place() {
 		// determine if this is the first time we're placing a unit
 		if (graph.getNumOwnedNodes(this) == 0) {
-			// place the first unit down in a defensive node (adjacency of 2)
+			// place the first unit down in the most defensive node (lowest degree)
 			// choose the one with the least adjacency threat
 			ArrayList<Node> degNodes = new ArrayList<Node>(0);
 			
@@ -203,6 +204,27 @@ public class DefensivePlayer extends Player {
 				// create an ArrayList of all our nodes
 				ArrayList<Node> nodes = graph.getOwnedNodes(this);
 				
+				// eliminate nodes not adjacent to enemy nodes
+				int index = 0;
+				while (index < nodes.size()) {
+					boolean adjEnemy = false;
+					
+					// check all adjacent nodes
+					for (Node node : nodes.get(index).getAdj()) {
+						// if the node belongs to an enemy player, this node is valid
+						if (node.getOwner() != this) {
+							adjEnemy = true;
+							break;
+						}
+					}
+					
+					// remove the node or check the next one
+					if (adjEnemy)
+						index++;
+					else
+						nodes.remove(index);
+				}
+				
 				// iterate through to find the most threatened node
 				int max = 0;
 				Node toPlace = nodes.get(0); 
@@ -233,6 +255,22 @@ public class DefensivePlayer extends Player {
 		/*
 		 * ATTACK STEP
 		 */
+
+		// sort nodes in order of increasing number of units
+		boolean sorted = false;
+		while (!sorted) {
+			sorted = true;
+			for (int i = 0; i < nodes.size() - 1; i++) {
+				// compare this node to the next one
+				if (nodes.get(i).getUnits() < nodes.get(i+1).getUnits()) {
+					sorted = false;
+					
+					// move this node to the end of the list
+					nodes.add(i+2, nodes.get(i));
+					nodes.remove(i);
+				}
+			}
+		}
 		
 		// iterate through the owned nodes and attack adjacent enemy nodes with fewer units
 		int index = 0;
@@ -241,6 +279,33 @@ public class DefensivePlayer extends Player {
 			
 			// get the nodes adjacent to this one
 			ArrayList<Node> adjNodes = node.getAdj();
+			
+			// prune out nodes not belonging to the enemy
+			int index2 = 0;
+			while (index2 < adjNodes.size()) {
+				if (adjNodes.get(index2).getOwner() == this) {
+					adjNodes.remove(index2);
+					adjNodes.trimToSize();
+				}
+				else
+					index2++;
+			}		
+			
+			// sort nodes in order of increasing number of units
+			sorted = false;
+			while (!sorted) {
+				sorted = true;
+				for (int i = 0; i < adjNodes.size() - 1; i++) {
+					// compare this node to the next one
+					if (adjNodes.get(i).getUnits() > adjNodes.get(i+1).getUnits()) {
+						sorted = false;
+						
+						// move this node to the end of the list
+						adjNodes.add(i+2, adjNodes.get(i));
+						adjNodes.remove(i);
+					}
+				}
+			}
 			
 			// iterate through the adjacent nodes
 			for (Node adjNode : adjNodes) {

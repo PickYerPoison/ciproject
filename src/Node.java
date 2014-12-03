@@ -48,7 +48,7 @@ public class Node {
 	 * @return The ArrayList containing the adjacent nodes.
 	 */
 	public ArrayList<Node> getAdj() {
-		return adjacent;
+		return new ArrayList<Node>(adjacent);
 	}
 	
 	/**
@@ -131,8 +131,10 @@ public class Node {
 			threat += getUnits() * range;
 			
 			if (range > 1) {
-				ArrayList<Node> uncheckedEnemyAdj = new ArrayList<Node>(getAdj());
+				// get the adjacent nodes
+				ArrayList<Node> uncheckedEnemyAdj = getAdj();
 				
+				// prune owned or checked adjacent nodes
 				int index = 0;
 				while (index < uncheckedEnemyAdj.size()) {
 					if (uncheckedEnemyAdj.get(index).getOwner() == getOwner() || uncheckedEnemyAdj.get(index).getChecked())
@@ -164,8 +166,11 @@ public class Node {
 	public int getThreat(int range) {
 		setChecked(true);
 		int threat = 0;
-		ArrayList<Node> uncheckedEnemyAdj = new ArrayList<Node>(getAdj());
 		
+		// get the adjacent nodes
+		ArrayList<Node> uncheckedEnemyAdj = getAdj();
+		
+		// prune owned or checked adjacent nodes
 		int index = 0;
 		while (index < uncheckedEnemyAdj.size()) {
 			if (uncheckedEnemyAdj.get(index).getOwner() == getOwner() || uncheckedEnemyAdj.get(index).getChecked())
@@ -257,31 +262,5 @@ public class Node {
 				threat += node.getAdjThreat(range, getOwner());
 		}
 		return threat;
-	}
-	
-	public int getNumNodes() {
-		// check this node off
-		setChecked(true);
-		
-		// count this node to start
-		int num = 1;
-		
-		// check with all adjacent nodes
-		ArrayList<Node> uncheckedAdj = new ArrayList<Node>(getAdj());
-		
-		int index = 0;
-		while (index < uncheckedAdj.size()) {
-			if (uncheckedAdj.get(index).getChecked())
-				uncheckedAdj.remove(index);
-			else
-				index++;
-		}
-		
-		for (Node node : uncheckedAdj) {
-			if (!node.getChecked())
-				num += node.getNumNodes();
-		}
-		
-		return num;
 	}
 }

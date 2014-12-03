@@ -7,17 +7,18 @@ import java.util.Random;
  *
  */
 public class Game {
-
-	private
-		Graph graph;
-		ArrayList<Player> players;
-		int telemetrySize = 5;
-		int[] telemetry = new int[telemetrySize];
+	public
 		final int TOTAL_GAMES = 0;
 		final int TOTAL_TURNS = 1;
 		final int MIN_TURNS = 2;
 		final int MAX_TURNS = 3;
 		final int TIES = 4;
+	
+	private
+		Graph graph;
+		ArrayList<Player> players;
+		int telemetrySize = 5;
+		int[] telemetry = new int[telemetrySize];
 	
 	/**
 	 * Constructor for the Game class.
@@ -26,11 +27,15 @@ public class Game {
 		graph = new Graph();
 		players = new ArrayList<Player>(0);
 		Arrays.fill(telemetry, 0);
-		telemetry[MIN_TURNS] = 999;
+		telemetry[MIN_TURNS] = 99999999;
 	}
 	
 	public Graph getGraph() {
 		return graph;
+	}
+	
+	public ArrayList<Player> getPlayers() {
+		return players;
 	}
 	
 	/* (non-Javadoc)
@@ -118,7 +123,7 @@ public class Game {
 	 * @param unloadPlayers Boolean specifying whether the list of players should be reset afterwards.
 	 * @param unloadMap Boolean specifying whether the graph of nodes should be reset afterwards.
 	 */
-	public void runGame(boolean unloadPlayers, boolean unloadMap) {
+	public void runGame(int maxTurns, boolean unloadPlayers, boolean unloadMap) {
 		// add players. if there's an error somewhere, inPlay is set to 0.
 		int inPlay = players.size();
 		
@@ -140,7 +145,6 @@ public class Game {
 		
 		// turns in game thus far
 		int turns = 0;
-		int maxTurns = 500;
 		
 		// cycle through players
 		while (inPlay > 1) {			
@@ -157,7 +161,7 @@ public class Game {
 					player.turn();
 
 					// increase the player's turn counter
-					player.setTelemetry(6, player.getTelemetry(6)+1);
+					player.set("TURNS", player.get("TURNS") + 1);
 				}
 			}
 			
@@ -178,15 +182,15 @@ public class Game {
 		telemetry[TOTAL_GAMES]++;
 		telemetry[TOTAL_TURNS] += (turns - 1);
 		if (turns > telemetry[MAX_TURNS])
-			telemetry[MAX_TURNS] = turns;
+			telemetry[MAX_TURNS] = turns-1;
 		if (turns < telemetry[MIN_TURNS])
-			telemetry[MIN_TURNS] = turns;
+			telemetry[MIN_TURNS] = turns-1;
 		
 		// update winner telemetry
 		if (inPlay == 1) {
 			for (Player player : players) {
 				if (player.hasLost() == false)
-					player.setTelemetry(7, player.getTelemetry(7)+1);
+					player.set("GAMES_WON", player.get("GAMES_WON")+1);
 			}
 		}
 		else
@@ -195,7 +199,7 @@ public class Game {
 		// update player telemetry
 		for (Player player : players) {
 			if (player.hasLost())
-				player.setTelemetry(8, player.getTelemetry(8)+1);
+				player.set("GAMES_LOST", player.get("GAMES_LOST") + 1);
 		}
 		
 		// unload any specified assets
@@ -213,6 +217,6 @@ public class Game {
 	 * Overloaded runGame() that doesn't unload anything afterwards.
 	 */
 	public void runGame() {
-		runGame(false, false);
+		runGame(500, false, false);
 	}
 }

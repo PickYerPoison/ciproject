@@ -1,3 +1,4 @@
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Arrays;
 
@@ -9,28 +10,17 @@ import java.util.Arrays;
  *
  */
 public abstract class Player {
-
 	protected
 		Graph graph = null;
 		String name = "Default";
-		int range = 3;
-		int telemetrySize = 9;
-		int[] telemetry = new int[telemetrySize];
-		final int ATTACKS = 0;
-		final int NODES_WON = 1;
-		final int NODES_LOST = 2;
-		final int PLAYERS_KILLED = 3;
-		final int UNITS_KILLED = 4;
-		final int UNITS_LOST = 5;
-		final int TURNS = 6;
-		final int GAMES_WON = 7;
-		final int GAMES_LOST = 8;
+		int range = 2;
+		HashMap<String, Object> telemetry = new HashMap<String, Object>(0);
 	
 	/**
 	 * Zero argument constructor for the Player class. 
 	 */
 	public Player() {
-		Arrays.fill(telemetry, 0);
+		setupTelemetry();
 	}
 	
 	/**
@@ -38,8 +28,30 @@ public abstract class Player {
 	 * @param n The name to give the player.
 	 */
 	public Player(String n) {
-		Arrays.fill(telemetry, 0);
+		setupTelemetry();
 		name = n;
+	}
+	
+	public void setupTelemetry() {
+		telemetry.put("ATTACKS", 0);
+		telemetry.put("NODES_WON", 0);
+		telemetry.put("NODES_LOST", 0);
+		telemetry.put("PLAYERS_KILLED", 0);
+		telemetry.put("UNITS_KILLED", 0);
+		telemetry.put("UNITS_LOST", 0);
+		telemetry.put("TURNS", 0);
+		telemetry.put("GAMES_WON", 0);
+		telemetry.put("GAMES_LOST", 0);
+	}
+	
+	
+	/**
+	 * Gets the telemetry data associated with a certain key.
+	 * @param key The key to get the data associated with.
+	 * @return The integer associated with the key.
+	 */
+	public int get(String key) {
+		return (int)(telemetry.get(key));
 	}
 	
 	/* (non-Javadoc)
@@ -47,23 +59,59 @@ public abstract class Player {
 	 */
 	public String toString() {
 		String out = "";
-		for (int i = 0; i < telemetrySize; i++) {
-			double totalGames = telemetry[GAMES_WON] + telemetry[GAMES_LOST];
-			switch (i) {
-				case ATTACKS: 		out += "       Attacks made: " + (telemetry[i]/totalGames) + "\n"; break;
-				case NODES_WON: 	out += "          Nodes won: " + (telemetry[i]/totalGames) + "\n"; break;
-				case NODES_LOST:	out += "         Nodes lost: " + (telemetry[i]/totalGames) + "\n"; break;
-				case PLAYERS_KILLED:out += "     Players killed: " + (telemetry[i]/totalGames) + "\n"; break;
-				case UNITS_KILLED: 	out += "       Units killed: " + (telemetry[i]/totalGames) + "\n"; break;
-				case UNITS_LOST:	out += "         Units lost: " + (telemetry[i]/totalGames) + "\n"; break;
-				case TURNS: 		out += "     Turns survived: " + ((telemetry[i]-1)/totalGames) + "\n"; break;
-				case GAMES_WON: {	double ratio = (telemetry[GAMES_WON]/(double)(telemetry[GAMES_LOST]));
-									ratio *= 100;
-									int r = (int)(ratio);
-									out += "          W/L ratio: " + (r/100.0) + "\n";
-									break; }
-			}
-		}
+		double totalGames = get("GAMES_WON") + get("GAMES_LOST");
+		double turns = (double)(get("TURNS"));
+		
+		double num = (get("ATTACKS")/turns);
+		num *= 100;
+		int n = (int)(num);
+		out += "   Attacks per turn: " + (n/100.0) + "\n";
+		
+		num = (get("NODES_WON")/totalGames);
+		num *= 100;
+		n = (int)(num);
+		out += "   Nodes won (game): " + (n/100.0) + "\n";
+		
+		num = (get("NODES_WON")/turns);
+		num *= 100;
+		n = (int)(num);
+		out += "   Nodes won (turn): " + (n/100.0) + "\n";
+		
+		num = (get("NODES_LOST")/totalGames);
+		num *= 100;
+		n = (int)(num);
+		out += "  Nodes lost (game): " + (n/100.0) + "\n";
+		
+		num = (get("NODES_LOST")/turns);
+		num *= 100;
+		n = (int)(num);
+		out += "  Nodes lost (turn): " + (n/100.0) + "\n";
+		
+		num = (get("PLAYERS_KILLED")/totalGames);
+		num *= 100;
+		n = (int)(num);
+		out += "     Players killed: " + (n/100.0) + "\n";
+		
+		num = (get("UNITS_KILLED")/turns);
+		num *= 100;
+		n = (int)(num);
+		out += "       Units killed: " + (n/100.0) + "\n";
+		
+		num = (get("UNITS_LOST")/turns);
+		num *= 100;
+		n = (int)(num);
+		out += "         Units lost: " + (n/100.0) + "\n";
+		
+		num = (get("TURNS")/totalGames);
+		num *= 100;
+		n = (int)(num);
+		out += "     Turns survived: " + (n/100.0) + "\n";
+		
+		num = (get("GAMES_WON")/totalGames);
+		num *= 100;
+		n = (int)(num);
+		out += "     Win percentage: " + (n/100.0) + "\n";
+		
 		return out;
 	}
 	
@@ -81,12 +129,8 @@ public abstract class Player {
 	 * @param index Integer index of the data to get.
 	 * @return The requested telemetry data.
 	 */
-	public int getTelemetry(int index) {
-		// don't run off the array if a bad value is given
-		if (0 < index && index < telemetrySize)
-			return telemetry[index];
-		else
-			return 0;
+	public int getTelemetry(String key) {
+		return get(key);
 	}
 	
 	/**
@@ -112,8 +156,10 @@ public abstract class Player {
 	 * @param index Integer index of the data to set.
 	 * @param value The value to set the data to.
 	 */
-	public void setTelemetry(int index, int value) {
-		telemetry[index] = value;
+	public void set(String key, int value) {
+		// don't add new values if a bad one is given!
+		if (telemetry.containsKey(key))
+			telemetry.put(key, value);
 		return;
 	}
 	
@@ -241,15 +287,15 @@ public abstract class Player {
 						showError("OCCUPY ERROR: Tried to move a negative number of units!");
 					// no errors - exchange ownership and units
 					else {
-						telemetry[ATTACKS]++;
-						telemetry[NODES_WON]++;
-						telemetry[UNITS_KILLED] += attackerWins;
-						telemetry[UNITS_LOST] += defenderWins;
-						to.getOwner().telemetry[NODES_LOST]++;
-						to.getOwner().telemetry[UNITS_KILLED] += defenderWins;
-						to.getOwner().telemetry[UNITS_LOST] += attackerWins;
+						set("ATTACKS", get("ATTACKS") + 1);
+						set("NODES_WON", get("NODES_WON") + 1);
+						set("UNITS_KILLED", get("UNITS_KILLED") + attackerWins);
+						set("UNITS_LOST", get("UNITS_LOST") + defenderWins);
+						to.getOwner().set("NODES_LOST", to.getOwner().get("NODES_LOST") + 1);
+						to.getOwner().set("UNITS_KILLED", to.getOwner().get("UNITS_KILLED") + defenderWins);
+						to.getOwner().set("UNITS_LOST", to.getOwner().get("UNITS_LOST") + attackerWins);
 						if (graph.getNumOwnedNodes(to.getOwner()) == 1)
-							telemetry[PLAYERS_KILLED]++;
+							set("PLAYERS_KILLED", get("PLAYERS_KILLED") + 1);
 						to.setOwner(this);
 						to.setUnits(0);
 						from.addUnits(-defenderWins);
@@ -259,11 +305,11 @@ public abstract class Player {
 				}
 				// otherwise, just process unit losses
 				else {
-					telemetry[ATTACKS]++;
-					telemetry[UNITS_KILLED] += attackerWins;
-					telemetry[UNITS_LOST] += defenderWins;
-					to.getOwner().telemetry[UNITS_KILLED] += defenderWins;
-					to.getOwner().telemetry[UNITS_LOST] += attackerWins;
+					set("ATTACKS", get("ATTACKS") + 1);
+					set("UNITS_KILLED", get("UNITS_KILLED") + attackerWins);
+					set("UNITS_LOST", get("UNITS_LOST") + defenderWins);
+					to.getOwner().set("UNITS_KILLED", to.getOwner().get("UNITS_KILLED") + defenderWins);
+					to.getOwner().set("UNITS_LOST", to.getOwner().get("UNITS_LOST") + attackerWins);
 					from.addUnits(-defenderWins);
 					to.addUnits(-attackerWins);
 					error = false;

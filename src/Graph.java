@@ -186,10 +186,13 @@ public class Graph {
 	 * @return The threat level of the node.
 	 */
 	public int getThreat(int range, Node node) {
+		// if the range is less than 1, automatically return 0
+		if (range <= 0)
+			return 0;
 		int threat = node.getThreat(range);
 		for (Node n : nodes)
 			n.setChecked(false);
-		return threat;
+		return Math.max(threat - node.getUnits()*(range), 0);
 	}
 	
 	/**

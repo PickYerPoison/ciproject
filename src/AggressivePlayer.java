@@ -182,6 +182,27 @@ public class AggressivePlayer extends Player {
 				// create an ArrayList of all our nodes
 				ArrayList<Node> nodes = graph.getOwnedNodes(this);
 				
+				// eliminate nodes not adjacent to enemy nodes
+				int index = 0;
+				while (index < nodes.size()) {
+					boolean adjEnemy = false;
+					
+					// check all adjacent nodes
+					for (Node node : nodes.get(index).getAdj()) {
+						// if the node belongs to an enemy player, this node is valid
+						if (node.getOwner() != this) {
+							adjEnemy = true;
+							break;
+						}
+					}
+					
+					// remove the node or check the next one
+					if (adjEnemy)
+						index++;
+					else
+						nodes.remove(index);
+				}
+				
 				// iterate through to find the most threatened node
 				int max = 0;
 				Node toPlace = nodes.get(0); 
@@ -217,18 +238,15 @@ public class AggressivePlayer extends Player {
 		boolean sorted = false;
 		while (!sorted) {
 			sorted = true;
-			int index = 0;
-			while (index < nodes.size() - 1) {
+			for (int i = 0; i < nodes.size() - 1; i++) {
 				// compare this node to the next one
-				if (nodes.get(index).getUnits() < nodes.get(index+1).getUnits()) {
+				if (nodes.get(i).getUnits() < nodes.get(i+1).getUnits()) {
 					sorted = false;
 					
 					// move this node to the end of the list
-					nodes.add(nodes.get(index));
-					nodes.remove(index);
+					nodes.add(i+2, nodes.get(i));
+					nodes.remove(i);
 				}
-				else
-					index++;
 			}
 		}
 		
@@ -239,7 +257,7 @@ public class AggressivePlayer extends Player {
 			Node node = nodes.get(index); 
 			
 			// get the nodes adjacent to this one
-			ArrayList<Node> adjNodes = new ArrayList<Node>(node.getAdj());
+			ArrayList<Node> adjNodes = node.getAdj();
 			
 			// prune out nodes not belonging to the enemy
 			int index2 = 0;
@@ -250,27 +268,23 @@ public class AggressivePlayer extends Player {
 				}
 				else
 					index2++;
-			}		
+			}
 			
-			// sort the adjacent enemy nodes in order of least to most units
+			// sort nodes in order of increasing number of units
 			sorted = false;
 			while (!sorted) {
 				sorted = true;
-				index2 = 0;
-				while (index2 < adjNodes.size() - 1) {
+				for (int i = 0; i < adjNodes.size() - 1; i++) {
 					// compare this node to the next one
-					if (adjNodes.get(index2).getUnits() > adjNodes.get(index2+1).getUnits()) {
+					if (adjNodes.get(i).getUnits() > adjNodes.get(i+1).getUnits()) {
 						sorted = false;
 						
 						// move this node to the end of the list
-						adjNodes.add(adjNodes.get(index2));
-						adjNodes.remove(index2);
+						adjNodes.add(i+2, adjNodes.get(i));
+						adjNodes.remove(i);
 					}
-					else
-						index2++;
 				}
 			}
-			
 			
 			// iterate through the adjacent nodes
 			for (Node adjNode : adjNodes) {

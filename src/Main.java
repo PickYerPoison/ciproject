@@ -1,3 +1,16 @@
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
+import jxl.Workbook;
+import jxl.read.biff.BiffException;
+import jxl.write.Label;
+import jxl.write.Number;
+import jxl.write.Formula;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+
 /**
  * @author Graham
  *
@@ -6,7 +19,7 @@ public class Main {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws BiffException, IOException, WriteException {
 		Game game = new Game();
 
 		// set up the game map
@@ -21,22 +34,122 @@ public class Main {
 		
 		game.setupMap(riskMap);
 		
-		// Add the players (between 3 and 6).
-		game.addPlayer(new DefensivePlayer());
-		game.addPlayer(new AggressivePlayer());
-		game.addPlayer(new BalancedPlayer());
-		//game.addPlayer(new DefensivePlayer("DefP2"));
-		//game.addPlayer(new AggressivePlayer("AggP2"));
-		//game.addPlayer(new BalancedPlayer("BalP2"));
-		//game.addPlayer(new DefensivePlayer("DefP3"));
-		//game.addPlayer(new AggressivePlayer("AggP3"));
-		//game.addPlayer(new BalancedPlayer("BalP3"));
+		// Add the players (between 3 and 6)
+		game.addPlayer(new DefensivePlayer("Defensive"));
+		game.addPlayer(new AggressivePlayer("Aggressive"));
+		game.addPlayer(new BalancedPlayer("Balanced"));
+		game.addPlayer(new WallPlayer("Wall"));
 		
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 10000; i++) {
 			game.randomizeStart();
 			game.runGame();
 		}
 		
+		// get the list of players
+		ArrayList<Player> players = game.getPlayers();
+		
+		// arrange the players - alphabetical by name
+		boolean sorted = false;
+		while (sorted == false) {
+			sorted = true;
+			for (int i = 0; i < players.size() - 1; i++) {
+				// for strings, "A" < "B"
+				int compare = players.get(i).getName().compareToIgnoreCase(players.get(i+1).getName());
+				
+				if (compare > 0) {
+					sorted = false;
+					players.add(i+2, players.get(i));
+					players.remove(i);
+				}
+			}
+		}
+		
 		System.out.print(game);
+		
+		// write to a spreadsheet
+		
+		// open the spreadsheet
+		WritableWorkbook workbook;
+		workbook = Workbook.createWorkbook(new File("output.xls"));
+		
+		// create a new sheet
+		WritableSheet wsheet = workbook.createSheet("Data", 0);
+		
+		// create arrays and references for adding data
+		String[] labels = { "Attacks per turn", "Nodes won per game",  "Nodes won per turn",
+						  "Nodes lost per game", "Nodes lost per turn", "Players killed per game", 
+						  "Units killed per turn",  "Units lost per turn", "Turns survived per game", "Win percentage" };
+		
+		// add the vertical labels (statistics)
+		int x = 0;
+		int y = 1;
+		for (String l : labels) {
+			Label label = new Label(x, y, l);
+			wsheet.addCell(label);
+			y++;
+		}
+		
+		// add the data for each player
+		for (x = 1; x <= players.size(); x++) {
+			Player player = players.get(x-1);
+			// add the player's name
+			Label label = new Label(x, 0, player.getName());
+			wsheet.addCell(label);
+			
+			// add their data
+			for (y = 1;  y <= labels.length; y++) {
+				
+				double totalGames = player.get("GAMES_WON") + player.get("GAMES_LOST");
+				double turns = (double)(player.get("TURNS"));
+				double out = 0;
+				
+				switch (y) {
+					case 1: 	out = (player.get("ATTACKS")/turns);	break;
+					case 2: 	out = (player.get("NODES_WON")/totalGames); break;
+					case 3: 	out = (player.get("NODES_WON")/turns); break;
+					case 4:		out = (player.get("NODES_LOST")/totalGames); break;
+					case 5: 	out = (player.get("NODES_LOST")/turns); break;
+					case 6:		out = (player.get("PLAYERS_KILLED")/totalGames); break;
+					case 7: 	out = (player.get("UNITS_KILLED")/turns); break;
+					case 8:		out = (player.get("UNITS_LOST")/turns); break;
+					case 9: 	out = (player.get("TURNS")/totalGames); break;
+					case 10:	out = player.get("GAMES_WON")/totalGames; break;
+				}
+				
+				// add the data point
+				Number number = new Number(x, y, out);
+				wsheet.addCell(number);
+			}
+		}
+		
+		// add the formulas
+		int width = x;
+		
+		// copy in vertical statistics
+		for (y = 1; y <= labels.length; y++) {
+			Formula formula = new Formula(x, y, "A" + (y + 1));
+			wsheet.addCell(formula);
+		}
+		
+		// copy or calculate in player data
+		for (int i = 0; i < players.size(); i++) {
+			// increment the x value and reset the y value
+			x++;
+			y = 0;
+			
+			// copy player name
+			Formula formula = new Formula(x, y, String.valueOf(Character.toChars('A' + (x - width))) + "1");
+			wsheet.addCell(formula);
+			
+			// add normalized statistics
+			for (y = 1; y <= labels.length; y++) {
+				formula = new Formula(x, y, String.valueOf(Character.toChars('A' + (x - width))) + (y + 1) +
+						"/MAX(B" + (y + 1) + ":" + String.valueOf(Character.toChars('A' + width)) + (y + 1) + ")");
+				wsheet.addCell(formula);
+			}
+		}
+		
+		workbook.write();
+		workbook.close();
 	}
 }
