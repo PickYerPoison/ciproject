@@ -364,6 +364,13 @@ public abstract class Player {
 	}
 	
 	/**
+	 * Optional function to implement. Will be called when each game starts.
+	 */
+	public void gameStart() {
+		return;
+	}
+	
+	/**
 	 * To be implemented by each individual AI. This function should contain
 	 * the AI's logic for deciding how many units to use when defending against
 	 * an attack. 

@@ -124,6 +124,10 @@ public class Game {
 	 * @param unloadMap Boolean specifying whether the graph of nodes should be reset afterwards.
 	 */
 	public void runGame(int maxTurns, boolean unloadPlayers, boolean unloadMap) {
+		// run each player's gameStart() function
+		for (Player player : players)
+			player.gameStart();
+		
 		// add players. if there's an error somewhere, inPlay is set to 0.
 		int inPlay = players.size();
 		

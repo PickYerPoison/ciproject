@@ -39,10 +39,49 @@ public class Main {
 		game.addPlayer(new AggressivePlayer("Aggressive"));
 		game.addPlayer(new BalancedPlayer("Balanced"));
 		game.addPlayer(new WallPlayer("Wall"));
+		EvolvingPlayer e = new EvolvingPlayer("Evolving");
+		game.addPlayer(e);
 		
 		for (int i = 0; i < 10000; i++) {
 			game.randomizeStart();
 			game.runGame();
+			
+			// break out of the game if the evolving player has fully evolved
+			boolean fullyEvolved = true;
+			for (double[] strat : e.masterStrats) {
+				double highest = 0;
+				double lowest = 0;
+				
+				// find the highest and lowest values
+				for (double val : strat) {
+					if (val > highest)
+						highest = val;
+					else if (val >= 0 && val < lowest)
+						lowest = val;
+				}
+				
+				// if the highest and the lowest are equal, it is not fully evolved
+				if (highest == lowest) {
+					fullyEvolved = false;
+					break;
+				}
+				
+				// see if it exceeds all of the others by the mutation rate
+				for (double val : strat) {
+					if (val < highest && val >= 0 && val + e.mutationRate >= highest) {
+						fullyEvolved = false;
+						break;
+					}
+				}
+				
+				// break out of the loop if we're able to
+				if (!fullyEvolved)
+					break;
+			}
+			
+			// finish the game if necessary
+			if (fullyEvolved)
+				break;
 		}
 		
 		// get the list of players
