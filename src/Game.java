@@ -13,8 +13,6 @@ public class Game {
 		final int MIN_TURNS = 2;
 		final int MAX_TURNS = 3;
 		final int TIES = 4;
-	
-	private
 		Graph graph;
 		ArrayList<Player> players;
 		int telemetrySize = 5;
@@ -36,6 +34,15 @@ public class Game {
 	
 	public ArrayList<Player> getPlayers() {
 		return players;
+	}
+	
+	public int getTelemetry(int x) {
+		return telemetry[x];
+	}
+	
+	public void setTelemetry(int key,  int val) {
+		telemetry[key] = val;
+		return;
 	}
 	
 	/* (non-Javadoc)
@@ -78,6 +85,18 @@ public class Game {
 		return;
 	}
 	
+	/**
+	 * Clears the players.
+	 */
+	public void clearPlayers() {
+		players.clear();
+		players.trimToSize();
+		return;
+	}
+	
+	/**
+	 * Randomizes the starting player.
+	 */
 	public void randomizeStart() {
 		// create rng
 		Random r = new Random();

@@ -37,6 +37,13 @@ public class EvolvingPlayer extends Player {
 		super(n);
 	}
 	
+	public void resetAlleles() {
+		defendStrats[0] = 0; defendStrats[1] = -1; defendStrats[2] = -1; defendStrats[3] = -1;
+		occupyStrats[0] = 0; occupyStrats[1] = 0; occupyStrats[2] = 0; occupyStrats[3] = -1; 
+		placeStrats[0] = 0; placeStrats[1] = 0; placeStrats[2] = 0; placeStrats[3] = 0;
+		turnStrats[0] = 0; turnStrats[1] = 0; turnStrats[2] = 0; turnStrats[3] = -1;
+	}
+	
 	/* (non-Javadoc)
 	 * @see Player#toString()
 	 */

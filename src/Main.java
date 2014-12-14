@@ -34,55 +34,160 @@ public class Main {
 		
 		game.setupMap(riskMap);
 		
-		// Add the players (between 3 and 6)
-		game.addPlayer(new DefensivePlayer("Defensive"));
-		game.addPlayer(new AggressivePlayer("Aggressive"));
-		game.addPlayer(new BalancedPlayer("Balanced"));
-		game.addPlayer(new WallPlayer("Wall"));
-		EvolvingPlayer e = new EvolvingPlayer("Evolving");
-		game.addPlayer(e);
+		// do each mutation/learning rate thing
+		// L = 0.01, M from 3 to 10 (25 runs)
+		// M = 3, L from 0.12 to 3 (25 runs)
+		// also, record it
 		
-		for (int i = 0; i < 10000; i++) {
-			game.randomizeStart();
-			game.runGame();
+		// open the spreadsheet
+		WritableWorkbook alleleWorkbook;
+		alleleWorkbook = Workbook.createWorkbook(new File("alleles.xls"));
+		
+		// create a new sheet
+		WritableSheet awsheet = alleleWorkbook.createSheet("Data", 0);
+		
+		// add the column headers
+		awsheet.addCell(new Label(0, 0, "M"));
+		awsheet.addCell(new Label(1, 0, "Games"));
+		awsheet.addCell(new Label(2, 0, "Wins"));
+		awsheet.addCell(new Label(3, 0, "L"));
+		awsheet.addCell(new Label(4, 0, "Games"));
+		awsheet.addCell(new Label(5, 0, "Wins"));
+		
+		int yy = 0;
+		
+		for (double m = 0; m <= 5.2; m += 5/25.0) {
+			game.setTelemetry(0, 0);
+			System.out.println("m = " + m);
+			// Add the players (between 3 and 6)
+			game.addPlayer(new DefensivePlayer("Defensive"));
+			game.addPlayer(new AggressivePlayer("Aggressive"));
+			game.addPlayer(new BalancedPlayer("Balanced"));
+			game.addPlayer(new WallPlayer("Wall"));
+			EvolvingPlayer e = new EvolvingPlayer("Evolving");
+			game.addPlayer(e);
 			
-			// break out of the game if the evolving player has fully evolved
-			boolean fullyEvolved = true;
-			for (double[] strat : e.masterStrats) {
-				double highest = 0;
-				double lowest = 0;
+			e.learningRate = 0.01;
+			e.mutationRate = m;
+			
+			yy++;
+			awsheet.addCell(new Number(0, yy, m));
+			
+			for (int i = 0; i < 10000; i++) {
+				game.randomizeStart();
+				game.runGame();
 				
-				// find the highest and lowest values
-				for (double val : strat) {
-					if (val > highest)
-						highest = val;
-					else if (val >= 0 && val < lowest)
-						lowest = val;
-				}
-				
-				// if the highest and the lowest are equal, it is not fully evolved
-				if (highest == lowest) {
-					fullyEvolved = false;
-					break;
-				}
-				
-				// see if it exceeds all of the others by the mutation rate
-				for (double val : strat) {
-					if (val < highest && val >= 0 && val + e.mutationRate >= highest) {
+				// break out of the game if the evolving player has fully evolved
+				boolean fullyEvolved = true;
+				for (double[] strat : e.masterStrats) {
+					double highest = 0;
+					double lowest = 0;
+					
+					// find the highest and lowest values
+					for (double val : strat) {
+						if (val > highest)
+							highest = val;
+						else if (val >= 0 && val < lowest)
+							lowest = val;
+					}
+					
+					// if the highest and the lowest are equal, it is not fully evolved
+					if (highest == lowest) {
 						fullyEvolved = false;
 						break;
 					}
+					
+					// see if it exceeds all of the others by the mutation rate
+					for (double val : strat) {
+						if (val < highest && val >= 0 && val + e.mutationRate >= highest) {
+							fullyEvolved = false;
+							break;
+						}
+					}
+					
+					// break out of the loop if we're able to
+					if (!fullyEvolved)
+						break;
 				}
 				
-				// break out of the loop if we're able to
-				if (!fullyEvolved)
+				// finish the game if necessary
+				if (fullyEvolved)
 					break;
 			}
 			
-			// finish the game if necessary
-			if (fullyEvolved)
-				break;
+			awsheet.addCell(new Number(1, yy, game.getTelemetry(0)));
+			awsheet.addCell(new Number(2, yy, e.getTelemetry("GAMES_WON")));
+			game.clearPlayers();
 		}
+		
+		yy = 0;
+		
+		for (double l = 0; l <= 3.1; l += 3/25.0) {
+			game.setTelemetry(0, 0);
+			System.out.println("l = " + l);
+			// Add the players (between 3 and 6)
+			game.addPlayer(new DefensivePlayer("Defensive"));
+			game.addPlayer(new AggressivePlayer("Aggressive"));
+			game.addPlayer(new BalancedPlayer("Balanced"));
+			game.addPlayer(new WallPlayer("Wall"));
+			EvolvingPlayer e = new EvolvingPlayer("Evolving");
+			game.addPlayer(e);
+			
+			e.learningRate = l;
+			e.mutationRate = 3;
+			
+			yy++;
+			awsheet.addCell(new Number(3, yy, l));
+			
+			for (int i = 0; i < 10000; i++) {
+				game.randomizeStart();
+				game.runGame();
+				
+				// break out of the game if the evolving player has fully evolved
+				boolean fullyEvolved = true;
+				for (double[] strat : e.masterStrats) {
+					double highest = 0;
+					double lowest = 0;
+					
+					// find the highest and lowest values
+					for (double val : strat) {
+						if (val > highest)
+							highest = val;
+						else if (val >= 0 && val < lowest)
+							lowest = val;
+					}
+					
+					// if the highest and the lowest are equal, it is not fully evolved
+					if (highest == lowest) {
+						fullyEvolved = false;
+						break;
+					}
+					
+					// see if it exceeds all of the others by the mutation rate
+					for (double val : strat) {
+						if (val < highest && val >= 0 && val + e.mutationRate >= highest) {
+							fullyEvolved = false;
+							break;
+						}
+					}
+					
+					// break out of the loop if we're able to
+					if (!fullyEvolved)
+						break;
+				}
+				
+				// finish the game if necessary
+				if (fullyEvolved)
+					break;
+			}
+			
+			awsheet.addCell(new Number(4, yy, game.getTelemetry(0)));
+			awsheet.addCell(new Number(5, yy, e.getTelemetry("GAMES_WON")));
+			game.clearPlayers();
+		}
+		
+		alleleWorkbook.write();
+		alleleWorkbook.close();
 		
 		// get the list of players
 		ArrayList<Player> players = game.getPlayers();
